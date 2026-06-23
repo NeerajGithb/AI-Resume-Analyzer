@@ -24,6 +24,11 @@ export const metadata: Metadata = {
   authors: [{ name: 'ResuPulse' }],
   creator: 'ResuPulse',
   publisher: 'ResuPulse',
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
   robots: {
     index: true,
     follow: true,
@@ -39,7 +44,7 @@ export const metadata: Metadata = {
       'AI-powered resume analysis that gives you an instant ATS score, keyword gaps, section-by-section scoring, and actionable improvement suggestions in 30 seconds. Free forever.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/logo.png',
         width: 1200,
         height: 630,
         alt: 'ResuPulse — AI-Powered Resume Analyzer',
@@ -50,7 +55,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'ResuPulse — Beat ATS Filters. Land More Interviews.',
     description: 'AI-powered resume analysis with ATS scoring, keyword gaps & AI suggestions. Free forever.',
-    images: ['/og-image.png'],
+    images: ['/logo.png'],
     creator: '@resupulse',
   },
   alternates: {

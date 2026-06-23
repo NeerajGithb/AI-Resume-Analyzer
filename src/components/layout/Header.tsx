@@ -2,29 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
 
-function LogoIcon() {
-  return (
-    <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
-      <rect width="30" height="30" rx="9" fill="url(#hLogoGrad)" />
-      <path d="M9 22L15 9L21 22" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      <line x1="11.5" y1="17.5" x2="18.5" y2="17.5" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-      <defs>
-        <linearGradient id="hLogoGrad" x1="0" y1="0" x2="30" y2="30">
-          <stop offset="0%" stopColor="#7c3aed" />
-          <stop offset="100%" stopColor="#a855f7" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
-
 const NAV_LINKS = [
   { href: '/about', label: 'About' },
+  { href: '/careers', label: 'Careers' },
   { href: '/blog', label: 'Blog' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/faq', label: 'FAQ' },
@@ -93,7 +79,7 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <LogoIcon />
+            <Image src="/logo.png" alt="ResuPulse Logo" width={40} height={40} className="rounded-lg" />
             <div>
               <span className="text-[15px] font-bold leading-none block text-gray-900">
                 ResuPulse

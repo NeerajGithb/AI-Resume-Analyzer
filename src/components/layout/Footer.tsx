@@ -1,23 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
-
-function LogoIcon() {
-  return (
-    <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
-      <rect width="34" height="34" rx="10" fill="url(#fLogoGrad)" />
-      <path d="M10 25L17 10L24 25" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      <line x1="12.5" y1="20" x2="21.5" y2="20" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-      <defs>
-        <linearGradient id="fLogoGrad" x1="0" y1="0" x2="34" y2="34">
-          <stop offset="0%" stopColor="#7c3aed" />
-          <stop offset="100%" stopColor="#ec4899" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
 
 const LINKS: Record<string, { label: string; href: string }[]> = {
   Product: [
@@ -31,6 +16,7 @@ const LINKS: Record<string, { label: string; href: string }[]> = {
   ],
   Company: [
     { label: 'About Us', href: '/about' },
+    { label: 'Careers', href: '/careers' },
     { label: 'Blog & Resources', href: '/blog' },
     { label: 'Pricing', href: '/pricing' },
     { label: 'FAQ', href: '/faq' },
@@ -81,7 +67,7 @@ export function Footer() {
           {/* Brand — 2 cols */}
           <div className="lg:col-span-2 space-y-6">
             <Link href="/" className="flex items-center gap-3 w-fit group">
-              <LogoIcon />
+              <Image src="/logo.png" alt="ResuPulse Logo" width={44} height={44} className="rounded-lg" />
               <div>
                 <p className="text-[15px] font-bold text-white leading-none">ResuPulse</p>
                 <p className="text-[10px] text-gray-500 mt-1 leading-none">AI-Powered Resume Analyzer</p>
