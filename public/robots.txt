@@ -1,0 +1,30 @@
+# robots.txt for ResuPulse
+
+User-agent: *
+Allow: /
+
+# Disallow private/auth pages
+Disallow: /analyze
+Disallow: /builder
+Disallow: /compare
+Disallow: /cover-letter
+Disallow: /job-match
+Disallow: /linkedin
+Disallow: /history
+Disallow: /analysis
+Disallow: /login
+Disallow: /signup
+
+# Allow marketing pages
+Allow: /
+Allow: /about
+Allow: /pricing
+Allow: /features
+Allow: /faq
+Allow: /contact
+Allow: /privacy
+Allow: /terms
+Allow: /blog
+
+# Sitemap
+Sitemap: https://resupulse.app/sitemap.xml

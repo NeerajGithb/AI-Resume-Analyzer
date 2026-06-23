@@ -1,0 +1,88 @@
+import { http, ApiError } from '@/lib/httpClient';
+import { JobMatchResult, JobMatchStage, SSEEvent } from '@/types';
+
+export type OnStage = (stage: JobMatchStage, progress: number) => void;
+
+const STAGE_ORDER: JobMatchStage[] = ['uploading', 'parsing', 'matching', 'finalizing'];
+
+function stageProgress(stage: JobMatchStage): number {
+  const idx = STAGE_ORDER.indexOf(stage);
+  return idx === -1 ? 0 : Math.round(((idx + 1) / STAGE_ORDER.length) * 100);
+}
+
+/**
+ * Matches resume to job description via SSE streaming.
+ */
+export async function matchResumeToJob(
+  resume: File,
+  jobDescription: string,
+  signal: AbortSignal,
+  onStage: OnStage,
+): Promise<JobMatchResult> {
+  const formData = new FormData();
+  formData.append('resume', resume);
+  formData.append('jobDescription', jobDescription);
+
+  const response = await http.stream('/match', formData, signal);
+
+  if (!response.ok) {
+    const requestId = response.headers.get('x-request-id') ?? undefined;
+    let message = 'Job match failed';
+    try {
+      const body = (await response.json()) as { message?: string };
+      message = body.message ?? message;
+    } catch { /* ignore */ }
+    throw new ApiError(response.status, message, requestId);
+  }
+
+  if (!response.body) {
+    throw new ApiError(response.status || 500, 'Server returned no response body');
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let completed = false;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const parts = buffer.split('\n\n');
+    buffer = parts.pop() ?? '';
+
+    for (const part of parts) {
+      const line = part.trim();
+      if (line.startsWith(':')) continue;
+      if (!line.startsWith('data:')) continue;
+
+      const json = line.slice('data:'.length).trim();
+      if (!json) continue;
+
+      let event: SSEEvent;
+      try {
+        event = JSON.parse(json) as SSEEvent;
+      } catch {
+        continue;
+      }
+
+      if (event.status === 'analyzing') {
+        const stage = event.stage as JobMatchStage;
+        onStage(stage, stageProgress(stage));
+      } else if (event.status === 'complete') {
+        completed = true;
+        return event.data as unknown as JobMatchResult;
+      } else if (event.status === 'error') {
+        throw new ApiError(502, event.message ?? 'Job match failed on server');
+      }
+    }
+  }
+
+  if (!completed) {
+    throw new ApiError(502, 'Connection closed before match completed. Please try again.');
+  }
+
+  throw new ApiError(500, 'Unexpected end of stream');
+}
+

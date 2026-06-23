@@ -1,26 +1,159 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ─── Custom utilities (Tailwind v4) ─────────────────────────────────────── */
+@utility gradient-text {
+  background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@utility glass {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@utility feature-card {
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* ─── Base reset ─────────────────────────────────────────────────────────── */
+html {
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ─── Focus ring ─────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* ─── Animations ─────────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+@keyframes orb-float {
+  0%,100% { transform: translate(0,   0  ) scale(1);    }
+  25%      { transform: translate(30px,-40px) scale(1.05); }
+  50%      { transform: translate(-20px,-60px) scale(0.95);}
+  75%      { transform: translate(-40px, 20px) scale(1.02);}
+}
+
+@keyframes orb-float-2 {
+  0%,100% { transform: translate(0,    0  ) scale(1);    }
+  25%      { transform: translate(-30px, 40px) scale(0.95); }
+  50%      { transform: translate(20px,  60px) scale(1.05); }
+  75%      { transform: translate(40px, -20px) scale(0.98); }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes ring-fill {
+  from { stroke-dashoffset: var(--ring-full); }
+  to   { stroke-dashoffset: var(--ring-offset); }
+}
+
+/* ─── Skeleton ───────────────────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+/* ─── Score ring ─────────────────────────────────────────────────────────── */
+.score-ring-progress {
+  animation: ring-fill 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation-delay: 0.3s;
+}
+
+/* ─── Marquee ────────────────────────────────────────────────────────────── */
+.marquee-inner {
+  animation: marquee 30s linear infinite;
+  display: flex;
+  white-space: nowrap;
+  width: max-content;
+}
+.marquee-inner:hover { animation-play-state: paused; }
+
+/* ─── Feature card hover ─────────────────────────────────────────────────── */
+.feature-card:hover {
+  box-shadow: 0 0 0 1.5px rgba(124,58,237,0.2), 0 12px 40px rgba(124,58,237,0.1);
+  transform: translateY(-4px);
+}
+
+/* ─── Step connector ─────────────────────────────────────────────────────── */
+.step-line {
+  background: linear-gradient(90deg, #7c3aed, #ec4899);
+}
+
+/* ─── FAQ accordion ──────────────────────────────────────────────────────── */
+.faq-item { transition: background 0.2s ease; }
+.faq-item:hover { background: #f9f5ff; }
+
+/* ─── Dashboard / App shell ──────────────────────────────────────────────── */
+:root {
+  --accent: #7c3aed;
+  --accent-light: #ede9fe;
+  --accent-hover: #6d28d9;
+  --accent-foreground: #ffffff;
+  --bg-page: #f9fafb;
+  --bg-surface: #ffffff;
+  --bg-elevated: #ffffff;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --text-subtle: #9ca3af;
+  --color-success: #059669;
+  --color-success-bg: #ecfdf5;
+  --color-success-border: #a7f3d0;
+  --color-warning: #d97706;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #fde68a;
+  --color-error: #dc2626;
+  --color-error-bg: #fef2f2;
+  --color-error-border: #fecaca;
+  --color-info: #2563eb;
+  --color-info-bg: #eff6ff;
+  --color-info-border: #bfdbfe;
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+  --shadow-card: 0 4px 28px rgba(0, 0, 0, 0.07);
+  --shadow-xl: 0 20px 60px -10px rgba(0,0,0,0.12);
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --sidebar-width: 232px;
+  --topnav-height: 56px;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
