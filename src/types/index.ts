@@ -207,6 +207,7 @@ export interface BuilderInput {
 }
 
 export interface BuilderResult {
+  id?: string;
   resume_markdown: string;
   ats_score: number;
   ats_grade: 'A' | 'B' | 'C' | 'D' | 'F';

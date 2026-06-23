@@ -1,4 +1,5 @@
 import { http } from '@/lib/httpClient';
+import { BuilderInput, BuilderResult } from '@/types';
 
 export interface BuilderFormData {
   name: string;
@@ -14,30 +15,15 @@ export interface BuilderFormData {
   skills: string;
 }
 
-export interface BuilderResult {
-  id: string;
-  name: string;
-  summary: string;
-  projects: Array<{
-    name: string;
-    year: string;
-    technologies: string;
-    url?: string;
-    bullets: string[];
-  }>;
-  achievements: string[];
-  createdAt: string;
-}
-
 interface ApiResponse<T> {
   success: boolean;
   data: T;
 }
 
-export async function generateResume(formData: BuilderFormData): Promise<BuilderResult> {
+export async function generateResume(input: BuilderInput): Promise<BuilderResult> {
   const response = await http.postJson<ApiResponse<BuilderResult>>(
     '/builder/generate',
-    formData,
+    input,
   );
   return response.data;
 }

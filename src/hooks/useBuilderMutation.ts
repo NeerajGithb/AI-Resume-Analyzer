@@ -16,10 +16,7 @@ export function useBuilderMutation() {
       setLoading(true);
 
       try {
-        const result = await builderService.buildResume(
-          input,
-          activeController.signal
-        );
+        const result = await builderService.generateResume(input);
         return result;
       } catch (err) {
         if (err instanceof DOMException && err.name === 'AbortError') {
