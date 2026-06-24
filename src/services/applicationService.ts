@@ -1,4 +1,5 @@
-import { http } from '@/lib/httpClient';
+import { http, ApiError } from '@/lib/httpClient';
+import { API_BASE_URL } from '@/lib/constants';
 import type {
   PreCheckResult,
   ApplicationSubmitData,
@@ -16,10 +17,43 @@ export async function preCheckResume(
   formData.append('resume', file);
   formData.append('jobId', jobId);
 
-  return http.postFormData<{ success: boolean; data: PreCheckResult }>(
-    '/applications/pre-check',
-    formData
-  );
+  // Get token from localStorage if available
+  let token: string | null = null;
+  if (typeof window !== 'undefined') {
+    try {
+      const authStorage = localStorage.getItem('auth-storage');
+      if (authStorage) {
+        const parsed = JSON.parse(authStorage);
+        token = parsed?.state?.token || null;
+      }
+    } catch {
+      // Ignore errors
+    }
+  }
+
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_BASE_URL}/applications/pre-check`, {
+    method: 'POST',
+    body: formData,
+    headers,
+  });
+
+  if (!res.ok) {
+    const requestId = res.headers.get('x-request-id') ?? undefined;
+    try {
+      const body = (await res.json()) as { message?: string };
+      throw new ApiError(res.status, body.message ?? res.statusText, requestId);
+    } catch (err) {
+      if (err instanceof ApiError) throw err;
+      throw new ApiError(res.status, res.statusText, requestId);
+    }
+  }
+
+  return res.json() as Promise<{ success: boolean; data: PreCheckResult }>;
 }
 
 export async function submitApplication(

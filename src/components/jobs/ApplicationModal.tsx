@@ -98,9 +98,8 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
         resumeAnalysis: {
           fileName: analysisResult.fileName,
           fileSize: analysisResult.fileSize,
-          ats_score: analysisResult.ats_score,
-          grade: analysisResult.grade,
           overall_score: analysisResult.overall_score,
+          grade: analysisResult.grade,
           sections: analysisResult.sections,
           missing_keywords: analysisResult.missing_keywords,
           improvements: analysisResult.improvements,
@@ -297,7 +296,7 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
                     <span className={`text-4xl font-bold ${
                       analysisResult.canSubmit ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      {analysisResult.ats_score}
+                      {analysisResult.overall_score}
                     </span>
                   </div>
                   <h3 className={`text-2xl font-bold mb-2 ${

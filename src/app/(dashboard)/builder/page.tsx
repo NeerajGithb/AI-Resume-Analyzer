@@ -198,9 +198,16 @@ export default function BuilderPage() {
     skills: [],
   });
   const [loading, setLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
+  const [currentStage, setCurrentStage] = useState<number>(0);
   const [skillSearch, setSkillSearch] = useState('');
   const [showSkillDropdown, setShowSkillDropdown] = useState(false);
+
+  const LOADING_STAGES = [
+    'Analyzing your information...',
+    'Organizing skills and experience...',
+    'Generating professional content...',
+    'Creating LaTeX resume...',
+  ];
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -249,8 +256,17 @@ export default function BuilderPage() {
     }
 
     setLoading(true);
-    setLoadingMessage('Analyzing your information...');
+    setCurrentStage(0);
     
+    // Show fake loading stages with delays
+    const delays = [800, 1000, 1200]; // Delays for each stage
+    
+    for (let i = 0; i < delays.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, delays[i]));
+      setCurrentStage(i + 1);
+    }
+    
+    // Final stage - now call the actual API
     try {
       // Convert skills array to comma-separated string for backend
       const dataToSend = {
@@ -259,17 +275,16 @@ export default function BuilderPage() {
         skills: formData.skills.join(', ')
       };
       
-      setLoadingMessage('Generating resume content with AI...');
       const result = await generateResume(dataToSend as any);
       
-      setLoadingMessage('Resume generated! Redirecting...');
+      // Small delay to show completion
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Small delay to show success message
-      setTimeout(() => {
-        router.push(`/builder/report/${result.id}`);
-      }, 500);
+      // Redirect to result page
+      router.push(`/builder/report/${result.id}`);
     } catch (error) {
       setLoading(false);
+      setCurrentStage(0);
       if (error instanceof ApiError) {
         alert(error.message);
       } else {
@@ -282,31 +297,72 @@ export default function BuilderPage() {
     <AppShell>
       <div className="max-w-4xl mx-auto p-6">
         {loading ? (
-          // Loading State - Show while generating
+          // Loading State - Show stages like analyze page
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="flex items-center justify-center min-h-[60vh]"
           >
-            <div className="text-center max-w-md">
-              <div className="relative mb-8">
-                <div className="animate-spin rounded-full h-20 w-20 border-b-4 border-blue-600 mx-auto"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <svg className="w-10 h-10 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+            <div className="w-full max-w-md bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-8 shadow-[var(--shadow-xs)]">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-[var(--text-primary)]">Generating Resume</h2>
+                  <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--accent)]"></div>
+                  </div>
                 </div>
-              </div>
-              <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">
-                {loadingMessage}
-              </h2>
-              <p className="text-sm text-[var(--text-muted)]">
-                This may take a few moments. Please don't close this page.
-              </p>
-              <div className="mt-6 flex items-center justify-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-blue-600 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-2 h-2 rounded-full bg-blue-600 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-2 h-2 rounded-full bg-blue-600 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+
+                {/* Progress Bar */}
+                <div className="relative">
+                  <div className="overflow-hidden h-2 text-xs flex rounded-full bg-[var(--bg-subtle)]">
+                    <motion.div
+                      initial={{ width: '0%' }}
+                      animate={{
+                        width: `${((currentStage + 1) / LOADING_STAGES.length) * 100}%`
+                      }}
+                      transition={{ duration: 0.5 }}
+                      className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-violet-600 to-purple-600"
+                    />
+                  </div>
+                </div>
+
+                {/* Stages */}
+                <div className="space-y-2">
+                  {LOADING_STAGES.map((stageName, idx) => {
+                    const isActive = idx === currentStage;
+                    const isComplete = idx < currentStage;
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
+                          isActive
+                            ? 'bg-violet-50 border border-violet-200'
+                            : isComplete
+                            ? 'bg-green-50 border border-green-200'
+                            : 'bg-gray-50 border border-gray-200'
+                        }`}
+                      >
+                        <div
+                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                            isActive
+                              ? 'bg-violet-600 text-white animate-pulse'
+                              : isComplete
+                              ? 'bg-green-600 text-white'
+                              : 'bg-gray-300 text-gray-600'
+                          }`}
+                        >
+                          {isComplete ? '✓' : idx + 1}
+                        </div>
+                        <span className={`text-sm font-medium ${
+                          isActive ? 'text-violet-900' : isComplete ? 'text-green-900' : 'text-gray-600'
+                        }`}>
+                          {stageName}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </motion.div>

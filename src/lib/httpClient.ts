@@ -95,6 +95,18 @@ export const http = {
       body: JSON.stringify(body),
     }),
 
+  // For JSON PUT requests
+  put: <T>(path: string, body: unknown, signal?: AbortSignal): Promise<T> =>
+    request<T>('PUT', path, {
+      signal,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+
+  // For DELETE requests
+  delete: <T>(path: string, options?: RequestOptions) =>
+    request<T>('DELETE', path, options),
+
   // For multipart/SSE — returns raw Response so the caller controls streaming
   stream: (path: string, body: FormData, signal?: AbortSignal): Promise<Response> => {
     // Get token from localStorage if available

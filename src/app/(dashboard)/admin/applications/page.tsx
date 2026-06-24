@@ -89,7 +89,7 @@ export default function AdminApplicationsPage() {
   const stats = {
     total: applications.length,
     avgScore: applications.length > 0
-      ? (applications.reduce((sum, app) => sum + app.resumeAnalysis.ats_score, 0) / applications.length).toFixed(1)
+      ? (applications.reduce((sum, app) => sum + app.resumeAnalysis.overall_score, 0) / applications.length).toFixed(1)
       : '0',
     submitted: applications.filter(a => a.status === 'submitted').length,
     shortlisted: applications.filter(a => a.status === 'shortlisted').length
@@ -243,8 +243,8 @@ export default function AdminApplicationsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className={`inline-flex items-center px-3 py-1 rounded-full font-semibold ${getScoreColor(application.resumeAnalysis.ats_score)}`}>
-                          {application.resumeAnalysis.ats_score}
+                        <div className={`inline-flex items-center px-3 py-1 rounded-full font-semibold ${getScoreColor(application.resumeAnalysis.overall_score)}`}>
+                          {application.resumeAnalysis.overall_score}
                           <span className="ml-1 text-xs">/ 100</span>
                         </div>
                         <div className="text-xs text-gray-500 mt-1">

@@ -344,9 +344,8 @@ export interface CandidateInfo {
 export interface ResumeAnalysisSummary {
   fileName: string;
   fileSize: number;
-  ats_score: number;
-  grade: string;
   overall_score: number;
+  grade: string;
   sections: Section[];
   missing_keywords: MissingKeywords;
   improvements: Improvement[];

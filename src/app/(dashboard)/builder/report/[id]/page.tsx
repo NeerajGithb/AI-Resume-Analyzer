@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/Button';
 import { useParams, useRouter } from 'next/navigation';
@@ -22,9 +22,7 @@ export default function BuilderResultPage() {
   const id = params.id as string;
 
   const [resumeData, setResumeData] = useState<any>(null);
-  const [pdfUrl, setPdfUrl] = useState('');
   const [loading, setLoading] = useState(true);
-  const [compilingPdf, setCompilingPdf] = useState(false);
 
   useEffect(() => {
     loadResume();
@@ -35,8 +33,6 @@ export default function BuilderResultPage() {
       setLoading(true);
       const result = await getResumeById(id);
       setResumeData(result);
-      // Auto-compile PDF on load
-      compilePdfPreview();
     } catch (error) {
       if (error instanceof ApiError) {
         alert(error.message);
@@ -49,41 +45,151 @@ export default function BuilderResultPage() {
     }
   };
 
-  const compilePdfPreview = async () => {
-    setCompilingPdf(true);
-    try {
-      // Use our backend endpoint with Puppeteer HTML→PDF
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/builder/compile-pdf`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeId: id }),
-      });
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        setPdfUrl(url);
-      } else {
-        const error = await response.json().catch(() => ({ message: 'Unknown error' }));
-        console.error('PDF compilation failed:', error);
-        alert('Failed to compile PDF. Please try again.');
-        setPdfUrl('');
-      }
-    } catch (error) {
-      console.error('Failed to compile PDF:', error);
-      alert('Failed to compile PDF. Please check your connection.');
-      setPdfUrl('');
-    } finally {
-      setCompilingPdf(false);
-    }
-  };
-
   const handleDownload = () => {
-    if (pdfUrl) {
-      const a = document.createElement('a');
-      a.href = pdfUrl;
-      a.download = 'resume.pdf';
-      a.click();
+    if (!resumeData?.latexCode) return;
+
+    // Create an HTML page that will redirect to LaTeX editor with code
+    const latexEditorPage = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Opening LaTeX Editor...</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .container {
+      background: white;
+      padding: 3rem;
+      border-radius: 1rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      text-align: center;
+      max-width: 600px;
+    }
+    h1 { color: #333; margin-bottom: 1rem; }
+    p { color: #666; margin-bottom: 2rem; }
+    .code-box {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      max-height: 300px;
+      overflow: auto;
+      text-align: left;
+      margin-bottom: 2rem;
+    }
+    pre {
+      margin: 0;
+      font-size: 0.75rem;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    button:hover {
+      background: #764ba2;
+      transform: translateY(-2px);
+    }
+    .links {
+      margin-top: 2rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+    .links a {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background: #f0f0f0;
+      color: #333;
+      text-decoration: none;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .links a:hover {
+      background: #e0e0e0;
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📄 Your LaTeX Resume is Ready!</h1>
+    <p>Copy the code below and paste it into any LaTeX editor:</p>
+    
+    <div class="code-box">
+      <pre id="latexCode">${resumeData.latexCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+    </div>
+    
+    <button onclick="copyCode()">📋 Copy LaTeX Code</button>
+    
+    <div class="links">
+      <a href="https://www.overleaf.com/project" target="_blank">Open Overleaf</a>
+      <a href="https://www.papeeria.com/" target="_blank">Open Papeeria</a>
+      <a href="https://latexbase.com/" target="_blank">Open LaTeXBase</a>
+    </div>
+    
+    <p style="margin-top: 2rem; font-size: 0.875rem;">
+      💡 <strong>How to use:</strong><br>
+      1. Click "Copy LaTeX Code"<br>
+      2. Open any LaTeX editor above<br>
+      3. Create new project and paste the code<br>
+      4. Click "Compile" to generate PDF
+    </p>
+  </div>
+  
+  <script>
+    function copyCode() {
+      const code = document.getElementById('latexCode').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        alert('✅ LaTeX code copied to clipboard!\\n\\nNow open Overleaf and paste it.');
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+        // Fallback: select text
+        const range = document.createRange();
+        range.selectNode(document.getElementById('latexCode'));
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        alert('Code selected! Press Ctrl+C (or Cmd+C) to copy.');
+      });
+    }
+    
+    // Auto-copy on load
+    window.onload = () => {
+      setTimeout(() => {
+        const shouldCopy = confirm('📋 Copy LaTeX code to clipboard automatically?');
+        if (shouldCopy) {
+          copyCode();
+        }
+      }, 500);
+    };
+  </script>
+</body>
+</html>
+    `;
+
+    // Open in new window
+    const newWindow = window.open('', '_blank');
+    if (newWindow) {
+      newWindow.document.write(latexEditorPage);
+      newWindow.document.close();
+    } else {
+      alert('Please allow popups to view your LaTeX code');
     }
   };
 
@@ -92,7 +198,7 @@ export default function BuilderResultPage() {
       <AppShell>
         <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)] mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)] mx-auto mb-4"></div>
             <p className="text-[var(--text-muted)]">Loading resume...</p>
           </div>
         </div>
@@ -102,64 +208,58 @@ export default function BuilderResultPage() {
 
   return (
     <AppShell>
-      <div className="h-[calc(100vh-4rem)] flex flex-col">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between p-4 border-b border-[var(--border)] bg-white"
-        >
-          <div className="flex items-center gap-3">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => router.push('/builder')}
-              icon={<EditIcon />}
-            >
-              New Resume
-            </Button>
-            <div className="h-4 w-px bg-[var(--border)]" />
-            <div>
-              <h1 className="text-sm font-semibold">Resume Preview</h1>
-              <p className="text-xs text-[var(--text-muted)]">Your professional resume</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleDownload}
-              icon={<DownloadIcon />}
-              disabled={!pdfUrl}
-            >
-              Download PDF
-            </Button>
-          </div>
-        </motion.div>
+      <div className="max-w-2xl mx-auto py-8 space-y-8">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key="result"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-8 shadow-[var(--shadow-xs)] text-center space-y-6">
+              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
+                <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Resume Ready!</h2>
+                <p className="text-sm text-[var(--text-muted)]">Your professional LaTeX resume has been generated</p>
+              </div>
+              
+              {/* LaTeX Code Preview */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-left max-h-48 overflow-auto">
+                <pre className="text-xs font-mono text-gray-700 whitespace-pre-wrap break-words">
+                  {resumeData?.latexCode?.substring(0, 300)}...
+                </pre>
+              </div>
 
-        {/* PDF Preview - Full Width */}
-        <div className="flex-1 flex items-center justify-center bg-gray-50 p-4 overflow-auto">
-          {compilingPdf ? (
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-sm text-[var(--text-muted)]">Generating your resume...</p>
+              <div className="pt-4">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={handleDownload}
+                  icon={<DownloadIcon />}
+                >
+                  View LaTeX Code & Copy
+                </Button>
+                <p className="text-xs text-[var(--text-muted)] mt-2">
+                  Opens LaTeX code → Copy → Paste in Overleaf → Compile to PDF
+                </p>
+              </div>
+              <div className="pt-4 border-t border-[var(--border)]">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => router.push('/builder')}
+                  icon={<EditIcon />}
+                >
+                  Create New Resume
+                </Button>
+              </div>
             </div>
-          ) : pdfUrl ? (
-            <iframe
-              src={pdfUrl}
-              className="w-full h-full border border-[var(--border)] rounded bg-white shadow-lg"
-              style={{ maxWidth: '8.5in', maxHeight: '11in' }}
-              title="PDF Preview"
-            />
-          ) : (
-            <div className="text-center max-w-md">
-              <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-              <p className="text-sm text-[var(--text-muted)] mb-3">Loading your resume...</p>
-            </div>
-          )}
-        </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
     </AppShell>
   );
