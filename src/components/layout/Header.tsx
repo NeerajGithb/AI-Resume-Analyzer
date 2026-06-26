@@ -18,7 +18,7 @@ const NAV_LINKS = [
 
 const TOOLS = [
   { href: '/analyze', label: 'Resume Analyzer', desc: 'Get instant ATS score & feedback', emoji: '📊' },
-  { href: '/builder', label: 'Resume Builder', desc: 'Build ATS-optimized resume from scratch', emoji: '🛠' },
+  { href: '/resume-builder-v2', label: 'Resume Builder', desc: 'Build ATS-optimized resume from scratch', emoji: '🛠' },
   { href: '/job-match', label: 'Job Match', desc: 'Match your resume to any job posting', emoji: '🎯' },
   { href: '/compare', label: 'Compare Resumes', desc: 'Side-by-side ATS comparison', emoji: '⚖️' },
   { href: '/cover-letter', label: 'Cover Letter AI', desc: 'Generate personalized cover letters', emoji: '✉️' },
@@ -45,8 +45,8 @@ export function Header() {
   const navLinkCls = (href: string) => {
     const active = isActive(href);
     return active
-      ? 'text-violet-600 bg-violet-50 px-3.5 py-2 rounded-lg text-sm font-medium'
-      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors';
+      ? 'text-violet-600 bg-violet-50 px-3.5 py-2 rounded-sm text-sm font-medium'
+      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3.5 py-2 rounded-sm text-sm font-medium transition-colors';
   };
 
   const handleLogout = () => {
@@ -79,7 +79,7 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <Image src="/logo.png" alt="ResuPulse Logo" width={40} height={40} className="rounded-lg" />
+            <Image src="/logo.png" alt="ResuPulse Logo" width={40} height={40} className="rounded-sm" />
             <div>
               <span className="text-[15px] font-bold leading-none block text-gray-900">
                 ResuPulse
@@ -100,7 +100,7 @@ export function Header() {
             >
               <button
                 className={[
-                  'flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors',
+                  'flex items-center gap-1.5 px-3.5 py-2 rounded-sm text-sm font-medium transition-colors',
                   isToolActive ? 'text-violet-600 bg-violet-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100',
                 ].join(' ')}
               >
@@ -120,7 +120,7 @@ export function Header() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.97 }}
                     transition={{ duration: 0.18 }}
-                    className="absolute top-full left-0 mt-2 w-[520px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
+                    className="absolute top-full left-0 mt-2 w-[520px] bg-white rounded-sm shadow-2xl border border-gray-100 overflow-hidden"
                     onMouseEnter={() => setShowTools(true)}
                     onMouseLeave={() => setShowTools(false)}
                   >
@@ -129,7 +129,7 @@ export function Header() {
                         <Link
                           key={tool.href}
                           href={tool.href}
-                          className="flex items-start gap-3 p-3 rounded-xl hover:bg-violet-50 transition-colors group"
+                          className="flex items-start gap-3 p-3 rounded-sm hover:bg-violet-50 transition-colors group"
                         >
                           <span className="text-xl mt-0.5 leading-none">{tool.emoji}</span>
                           <div>
@@ -163,7 +163,7 @@ export function Header() {
                 <Link
                   href="/history"
                   className={cn(
-                    'text-sm font-medium px-3.5 py-2 rounded-lg transition-colors',
+                    'text-sm font-medium px-3.5 py-2 rounded-sm transition-colors',
                     isActive('/history') ? 'text-violet-600 bg-violet-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   )}
                 >
@@ -194,7 +194,7 @@ export function Header() {
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
                         onMouseLeave={() => setShowUserMenu(false)}
-                        className="absolute top-full right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
+                        className="absolute top-full right-0 mt-2 w-64 bg-white rounded-sm shadow-2xl border border-gray-100 overflow-hidden"
                       >
                         {/* User Info Header */}
                         <div className="p-4 border-b border-gray-100 bg-gradient-to-br from-violet-50 to-blue-50">
@@ -274,13 +274,13 @@ export function Header() {
               <>
                 <Link
                   href="/login"
-                  className="text-sm font-medium px-3.5 py-2 rounded-lg transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  className="text-sm font-medium px-3.5 py-2 rounded-sm transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 >
                   Login
                 </Link>
                 <Link
                   href="/analyze"
-                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 transition-all shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:scale-[1.02] active:scale-[0.98]"
+                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-sm text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 transition-all shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:scale-[1.02] active:scale-[0.98]"
                 >
                   Analyze Resume
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -295,7 +295,7 @@ export function Header() {
           <button
             onClick={() => setMobileOpen(o => !o)}
             aria-label="Toggle navigation"
-            className="md:hidden p-2 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
+            className="md:hidden p-2 rounded-sm transition-colors text-gray-700 hover:bg-gray-100"
           >
             {mobileOpen ? (
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -326,7 +326,7 @@ export function Header() {
                 <Link
                   key={href}
                   href={href}
-                  className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors"
+                  className="flex items-center gap-3 px-3 py-3 rounded-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors"
                 >
                   <span className="text-lg">{emoji}</span>
                   <span className="text-sm font-medium">{label}</span>
@@ -340,7 +340,7 @@ export function Header() {
                 <Link
                   key={href}
                   href={href}
-                  className="flex items-center px-3 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors"
+                  className="flex items-center px-3 py-3 rounded-sm text-sm font-medium text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors"
                 >
                   {label}
                 </Link>
@@ -350,19 +350,19 @@ export function Header() {
                   <>
                     <Link
                       href="/history"
-                      className="flex items-center justify-center px-4 py-3 rounded-xl text-sm font-semibold text-violet-600 border-2 border-violet-200 hover:bg-violet-50 transition-colors"
+                      className="flex items-center justify-center px-4 py-3 rounded-sm text-sm font-semibold text-violet-600 border-2 border-violet-200 hover:bg-violet-50 transition-colors"
                     >
                       My History
                     </Link>
                     <Link
                       href="/analyze"
-                      className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-purple-600"
+                      className="flex items-center justify-center gap-2 px-4 py-3 rounded-sm text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-purple-600"
                     >
                       Analyze Resume →
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center justify-center px-4 py-3 rounded-xl text-sm font-semibold text-red-600 border-2 border-red-200 hover:bg-red-50 transition-colors"
+                      className="w-full flex items-center justify-center px-4 py-3 rounded-sm text-sm font-semibold text-red-600 border-2 border-red-200 hover:bg-red-50 transition-colors"
                     >
                       Logout
                     </button>
@@ -371,13 +371,13 @@ export function Header() {
                   <>
                     <Link
                       href="/login"
-                      className="flex items-center justify-center px-4 py-3 rounded-xl text-sm font-semibold text-violet-600 border-2 border-violet-200 hover:bg-violet-50 transition-colors"
+                      className="flex items-center justify-center px-4 py-3 rounded-sm text-sm font-semibold text-violet-600 border-2 border-violet-200 hover:bg-violet-50 transition-colors"
                     >
                       Login
                     </Link>
                     <Link
                       href="/analyze"
-                      className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-purple-600"
+                      className="flex items-center justify-center gap-2 px-4 py-3 rounded-sm text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-purple-600"
                     >
                       Analyze Resume Free →
                     </Link>

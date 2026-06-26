@@ -131,7 +131,7 @@ export default function BlogPage() {
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat}
-                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                  className={`px-4 py-2 rounded-sm text-sm font-semibold transition-all ${
                     cat === 'All'
                       ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white shadow-lg'
                       : 'bg-white text-gray-600 border border-gray-200 hover:border-violet-300 hover:text-violet-700'
@@ -161,7 +161,7 @@ export default function BlogPage() {
               <FadeUp key={post.slug} delay={i * 0.1}>
                 <Link
                   href={`/blog/${post.slug}`}
-                  className="block bg-white rounded-2xl p-8 border border-gray-100 hover:border-violet-200 transition-all group shadow-[0_4px_28px_rgba(0,0,0,0.07)] hover:shadow-[0_8px_40px_rgba(124,58,237,0.15)]"
+                  className="block bg-white rounded-sm p-8 border border-gray-100 hover:border-violet-200 transition-all group shadow-[0_4px_28px_rgba(0,0,0,0.07)] hover:shadow-[0_8px_40px_rgba(124,58,237,0.15)]"
                 >
                   <div className="flex items-center gap-3 mb-4">
                     <span className="px-3 py-1 rounded-full text-xs font-bold bg-violet-100 text-violet-700 border border-violet-200">
@@ -205,7 +205,7 @@ export default function BlogPage() {
               <FadeUp key={post.slug} delay={i * 0.08}>
                 <Link
                   href={`/blog/${post.slug}`}
-                  className="block bg-white rounded-xl p-6 border border-gray-100 hover:border-violet-200 transition-all group h-full shadow-[0_4px_28px_rgba(0,0,0,0.07)] hover:shadow-[0_8px_40px_rgba(124,58,237,0.1)]"
+                  className="block bg-white rounded-sm p-6 border border-gray-100 hover:border-violet-200 transition-all group h-full shadow-[0_4px_28px_rgba(0,0,0,0.07)] hover:shadow-[0_8px_40px_rgba(124,58,237,0.1)]"
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600">
@@ -243,11 +243,11 @@ export default function BlogPage() {
               <input
                 type="email"
                 placeholder="your.email@example.com"
-                className="flex-1 px-5 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                className="flex-1 px-5 py-3.5 rounded-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
               />
               <button
                 type="submit"
-                className="px-6 py-3.5 rounded-xl font-bold text-white transition-all hover:opacity-90"
+                className="px-6 py-3.5 rounded-sm font-bold text-white transition-all hover:opacity-90"
                 style={{ background: 'linear-gradient(135deg, #7c3aed, #ec4899)' }}
               >
                 Subscribe
@@ -271,7 +271,7 @@ export default function BlogPage() {
             </p>
             <Link
               href="/analyze"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-white text-[15px] transition-all hover:opacity-90 hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-sm font-bold text-white text-[15px] transition-all hover:opacity-90 hover:scale-[1.02]"
               style={{ background: 'linear-gradient(135deg, #7c3aed, #ec4899)', boxShadow: '0 8px 32px rgba(124,58,237,0.4)' }}
             >
               Analyze My Resume Free →

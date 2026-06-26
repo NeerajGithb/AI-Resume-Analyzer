@@ -284,14 +284,14 @@ export default function BlogPostPage() {
             }
             if (paragraph.startsWith('**') && paragraph.includes('**Good:**')) {
               return (
-                <div key={i} className="my-4 p-4 rounded-lg bg-emerald-50 border border-emerald-200">
+                <div key={i} className="my-4 p-4 rounded-sm bg-emerald-50 border border-emerald-200">
                   <p className="text-sm text-emerald-800 m-0">{paragraph.replace(/\*\*/g, '')}</p>
                 </div>
               );
             }
             if (paragraph.startsWith('**') && paragraph.includes('**Bad:**')) {
               return (
-                <div key={i} className="my-4 p-4 rounded-lg bg-red-50 border border-red-200">
+                <div key={i} className="my-4 p-4 rounded-sm bg-red-50 border border-red-200">
                   <p className="text-sm text-red-800 m-0">{paragraph.replace(/\*\*/g, '')}</p>
                 </div>
               );
@@ -314,7 +314,7 @@ export default function BlogPostPage() {
           </p>
           <Link
             href="/analyze"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-gradient-to-r from-violet-600 to-pink-600 hover:opacity-90 transition-all"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-sm font-bold text-white bg-gradient-to-r from-violet-600 to-pink-600 hover:opacity-90 transition-all"
           >
             Analyze My Resume Free →
           </Link>

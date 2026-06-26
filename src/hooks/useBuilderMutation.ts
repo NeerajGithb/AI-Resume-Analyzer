@@ -1,53 +1,85 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRef } from 'react';
 import * as builderService from '@/services/resumeBuilderService';
 import { useBuilderStore } from '@/store/builderUIStore';
 import { BuilderInput, BuilderResult } from '@/types';
 
-let activeController: AbortController | null = null;
-
 export function useBuilderMutation() {
-  const { setLoading } = useBuilderStore();
+  const queryClient = useQueryClient();
+  const { setStageProgress } = useBuilderStore();
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const mutation = useMutation<BuilderResult, Error, BuilderInput>({
-    mutationFn: async (input) => {
-      activeController?.abort();
-      activeController = new AbortController();
+  const mutation = useMutation({
+    mutationFn: async (input: BuilderInput) => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      
+      abortControllerRef.current = new AbortController();
+      const signal = abortControllerRef.current.signal;
 
-      setLoading(true);
+      setStageProgress('uploading', 0);
 
       try {
-        const result = await builderService.generateResume(input);
-        return result;
-      } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') {
-          setLoading(false);
-        }
-        throw err;
+        return await builderService.generateResume(
+          input,
+          signal,
+          (stage, progress) => setStageProgress(stage, progress)
+        );
       } finally {
-        activeController = null;
+        abortControllerRef.current = null;
       }
     },
-    onSuccess: () => {
-      setLoading(false);
+    onSuccess: (data) => {
+      setStageProgress(null, 0);
+      queryClient.setQueryData(['latest-builder'], { result: data, error: null });
+      queryClient.invalidateQueries({ queryKey: ['history'] });
     },
-    onError: () => {
-      setLoading(false);
+    onError: (err) => {
+      setStageProgress(null, 0);
+      queryClient.setQueryData(['latest-builder'], { result: null, error: err });
     },
   });
 
   const abort = (onAbort?: () => void) => {
-    if (activeController) {
-      activeController.abort();
-      activeController = null;
-      setLoading(false);
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setStageProgress(null, 0);
       mutation.reset();
       onAbort?.();
     }
   };
 
-  return {
-    ...mutation,
-    abort,
-  };
+  return { ...mutation, abort };
+}
+
+export interface LatestBuilderCache {
+  result: BuilderResult | null;
+  error: Error | null;
+}
+
+/**
+ * Query hook to get the latest builder result from cache.
+ * Used by report page to access mutation result.
+ */
+export function useLatestBuilderQuery() {
+  return useQuery<LatestBuilderCache>({
+    queryKey: ['latest-builder'],
+    queryFn: () => ({ result: null, error: null }),
+    enabled: false,
+  });
+}
+
+export function useBuilderResultQuery(id?: string) {
+  return useQuery({
+    queryKey: ['builder-result', id],
+    queryFn: async () => {
+      if (!id) throw new Error('ID required');
+      return await builderService.getResumeById(id);
+    },
+    enabled: !!id,
+    staleTime: 1000 * 60 * 60,
+  });
 }
 

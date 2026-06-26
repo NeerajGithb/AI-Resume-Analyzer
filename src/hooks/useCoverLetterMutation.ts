@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as coverLetterService from '@/services/coverLetterService';
 import { useCoverLetterStore } from '@/store/coverLetterUIStore';
 import { CoverLetterResult } from '@/types';
@@ -12,7 +12,13 @@ interface CoverLetterInput {
   tone: 'professional' | 'enthusiastic' | 'formal' | 'conversational';
 }
 
+export interface LatestCoverLetterCache {
+  result: CoverLetterResult | null;
+  error: Error | null;
+}
+
 export function useCoverLetterMutation() {
+  const queryClient = useQueryClient();
   const { setStageProgress, setResume, setJobDescription, setCompanyName, setTone } = useCoverLetterStore();
 
   const mutation = useMutation<CoverLetterResult, Error, CoverLetterInput>({
@@ -47,11 +53,19 @@ export function useCoverLetterMutation() {
         activeController = null;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       setStageProgress(null, 0);
+      queryClient.setQueryData<LatestCoverLetterCache>(['latest-cover-letter'], {
+        result: data,
+        error: null,
+      });
     },
-    onError: () => {
+    onError: (err) => {
       setStageProgress(null, 0);
+      queryClient.setQueryData<LatestCoverLetterCache>(['latest-cover-letter'], {
+        result: null,
+        error: err,
+      });
     },
   });
 
@@ -71,3 +85,28 @@ export function useCoverLetterMutation() {
   };
 }
 
+/**
+ * Query hook to get the latest cover letter from cache.
+ * Used by report page to access mutation result.
+ */
+export function useLatestCoverLetterQuery() {
+  return useQuery<LatestCoverLetterCache>({
+    queryKey: ['latest-cover-letter'],
+    queryFn: () => ({ result: null, error: null }),
+    enabled: false,
+  });
+}
+
+/**
+ * Fetches a saved cover letter by ID from the backend.
+ * Returns undefined when id is undefined (used during the temporary processing phase).
+ */
+export function useCoverLetterResultQuery(id: string | undefined) {
+  return useQuery<CoverLetterResult, Error>({
+    queryKey: ['cover-letter', id],
+    queryFn: () => coverLetterService.getCoverLetterById(id!),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1,
+  });
+}

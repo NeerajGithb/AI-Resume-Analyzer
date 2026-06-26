@@ -1,23 +1,32 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Resume Analyzer - Get Your ATS Score Instantly',
+  title: 'AI Resume Analysis - Beat ATS Filters & Land More Interviews | ResuPulse',
   description:
-    'Upload your resume and get an instant ATS compatibility score (0-100), keyword gap analysis, section-by-section feedback, and AI improvement suggestions. Free, no signup required.',
+    'Get instant ATS score, keyword gap analysis, and AI-powered improvement suggestions in 30 seconds. Free resume analysis tool used by 50,000+ professionals. Improve your resume and land 3x more interviews with our advanced AI analyzer.',
   keywords: [
-    'resume analyzer',
+    'resume analysis',
     'ATS score',
     'resume checker',
-    'ATS compatibility',
+    'ATS optimization',
+    'resume keywords',
+    'applicant tracking system',
+    'job application',
+    'career tools',
+    'resume tips',
+    'AI resume analyzer',
     'resume feedback',
     'resume review',
-    'career tools',
+    'ATS compatibility',
+    'resume scanner',
+    'free resume checker',
   ],
   openGraph: {
-    title: 'Resume Analyzer - Get Your ATS Score Instantly | ResuPulse',
+    title: 'AI Resume Analysis - Beat ATS & Land More Interviews | ResuPulse',
     description:
-      'Upload your resume and get instant ATS scoring, keyword analysis, and AI-powered improvement suggestions. Free forever.',
+      'Upload your resume and get instant feedback on ATS compatibility, missing keywords, and content quality. Free forever. Join 50,000+ professionals who improved their resumes.',
     type: 'website',
   },
 };
+
 

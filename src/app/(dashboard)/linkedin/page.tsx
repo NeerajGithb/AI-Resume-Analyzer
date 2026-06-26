@@ -3,13 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/Button';
-import { AnalysisProgress } from '@/components/analysis/AnalysisProgress';
 import { useLinkedInStore } from '@/store/linkedinUIStore';
 import { useLinkedInMutation } from '@/hooks/useLinkedInMutation';
-
-import { LINKEDIN_STAGES } from '@/lib/constants';
 
 function ArrowRightIcon() {
   return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>;
@@ -49,8 +45,8 @@ export default function LinkedInPage() {
   };
 
   return (
-    <AppShell>
-        <div className="max-w-4xl mx-auto space-y-8">
+    <div>
+        <div className="space-y-8">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -173,7 +169,7 @@ export default function LinkedInPage() {
             )}
           </AnimatePresence>
         </div>
-      </AppShell>
+      </div>
   );
 }
 

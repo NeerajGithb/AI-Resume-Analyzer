@@ -115,9 +115,9 @@ export default function ContactPage() {
               <FadeUp key={title} delay={i * 0.1}>
                 <a
                   href={link}
-                  className="block bg-white rounded-2xl p-6 border border-gray-100 hover:border-violet-200 transition-all group shadow-[0_4px_28px_rgba(0,0,0,0.07)] hover:shadow-[0_8px_40px_rgba(124,58,237,0.15)]"
+                  className="block bg-white rounded-sm p-6 border border-gray-100 hover:border-violet-200 transition-all group shadow-[0_4px_28px_rgba(0,0,0,0.07)] hover:shadow-[0_8px_40px_rgba(124,58,237,0.15)]"
                 >
-                  <div className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl mb-4 transition-transform group-hover:scale-110" style={{ background: `${color}15` }}>
+                  <div className="w-14 h-14 rounded-sm flex items-center justify-center text-3xl mb-4 transition-transform group-hover:scale-110" style={{ background: `${color}15` }}>
                     {icon}
                   </div>
                   <h3 className="text-base font-bold text-gray-900 mb-2">{title}</h3>
@@ -152,7 +152,7 @@ export default function ContactPage() {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 rounded-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                     placeholder="John Doe"
                   />
                 </div>
@@ -167,7 +167,7 @@ export default function ContactPage() {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 rounded-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                     placeholder="john@example.com"
                   />
                 </div>
@@ -183,7 +183,7 @@ export default function ContactPage() {
                   value={formData.subject}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 rounded-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                 >
                   <option value="">Select a subject</option>
                   <option value="support">General Support</option>
@@ -206,13 +206,13 @@ export default function ContactPage() {
                   onChange={handleChange}
                   required
                   rows={6}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all resize-none"
                   placeholder="Tell us how we can help..."
                 />
               </div>
 
               {status === 'success' && (
-                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+                <div className="p-4 rounded-sm bg-emerald-50 border border-emerald-200">
                   <p className="text-sm text-emerald-700 flex items-center gap-2">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="20 6 9 17 4 12" />
@@ -223,7 +223,7 @@ export default function ContactPage() {
               )}
 
               {status === 'error' && (
-                <div className="p-4 rounded-xl bg-red-50 border border-red-200">
+                <div className="p-4 rounded-sm bg-red-50 border border-red-200">
                   <p className="text-sm text-red-700">
                     <strong>Error:</strong> Something went wrong. Please try again or email us directly.
                   </p>
@@ -233,7 +233,7 @@ export default function ContactPage() {
               <button
                 type="submit"
                 disabled={status === 'submitting'}
-                className="w-full py-4 rounded-xl font-bold text-white transition-all hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full py-4 rounded-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
                 style={{ background: 'linear-gradient(135deg, #7c3aed, #ec4899)', boxShadow: '0 8px 32px rgba(124,58,237,0.35)' }}
               >
                 {status === 'submitting' ? 'Sending...' : 'Send Message →'}
@@ -261,7 +261,7 @@ export default function ContactPage() {
                 <Link
                   key={q}
                   href={link}
-                  className="block p-4 rounded-xl bg-white border border-gray-100 hover:border-violet-200 transition-all group"
+                  className="block p-4 rounded-sm bg-white border border-gray-100 hover:border-violet-200 transition-all group"
                 >
                   <p className="text-sm font-semibold text-gray-700 group-hover:text-violet-600 transition-colors">{q}</p>
                 </Link>
@@ -284,8 +284,8 @@ export default function ContactPage() {
       <section className="py-16 bg-white border-t border-gray-100">
         <div className="max-w-4xl mx-auto px-6">
           <FadeUp className="text-center">
-            <div className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-violet-50 border border-violet-200">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white text-xl flex-shrink-0">
+            <div className="inline-flex items-center gap-3 px-6 py-4 rounded-sm bg-violet-50 border border-violet-200">
+              <div className="w-12 h-12 rounded-sm bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white text-xl flex-shrink-0">
                 ⏱
               </div>
               <div className="text-left">
@@ -307,7 +307,7 @@ export default function ContactPage() {
             </p>
             <Link
               href="/analyze"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-white text-[15px] transition-all hover:opacity-90 hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-sm font-bold text-white text-[15px] transition-all hover:opacity-90 hover:scale-[1.02]"
               style={{ background: 'linear-gradient(135deg, #7c3aed, #ec4899)', boxShadow: '0 8px 32px rgba(124,58,237,0.4)' }}
             >
               Analyze My Resume Free →

@@ -1,96 +1,78 @@
-import { http, ApiError } from '@/lib/httpClient';
-import { AnalysisResult, AnalysisStage, SSEEvent } from '@/types';
+import axiosInstance from '@/lib/api/baseService';
+import { ProgressHelper } from '@/lib/api/progressHelper';
+import { AnalysisStage } from '@/lib/constants';
+import { AnalysisResult } from '@/types';
 
 export type OnStage = (stage: AnalysisStage, progress: number) => void;
 
-const STAGE_ORDER: AnalysisStage[] = ['uploading', 'parsing', 'scoring', 'keywords', 'suggestions', 'finalizing'];
+// Stages shown to the user — last one ("finalizing") animates AFTER API returns
+const ANALYSIS_STAGES: AnalysisStage[] = [
+  'uploading',
+  'parsing',
+  'scoring',
+  'keywords',
+  'suggestions',
+  'finalizing',   // ← added; ProgressHelper animates this only after API resolves
+];
 
-function stageProgress(stage: AnalysisStage): number {
-  const idx = STAGE_ORDER.indexOf(stage);
-  return idx === -1 ? 0 : Math.round(((idx + 1) / STAGE_ORDER.length) * 100);
-}
+// Per-stage durations in ms — generous so UI never looks rushed
+const STAGE_DURATIONS = [
+  900,   // uploading
+  1400,  // parsing
+  1800,  // scoring
+  1600,  // keywords
+  1400,  // suggestions
+  600,   // finalizing (post-API, quick wrap-up)
+];
 
-/**
- * Uploads the resume file, consumes the SSE stream, and returns the final result.
- * Calls `onStage` on each progress event so the store can update UI state.
- * Throws `ApiError` on HTTP errors or server-side failures.
- */
 export async function run(
   file: File,
   signal: AbortSignal,
   onStage: OnStage,
   yearsOfExperience?: string,
   targetRole?: string,
-): Promise<AnalysisResult> {
-  const formData = new FormData();
-  formData.append('resume', file);
-  if (yearsOfExperience) {
-    formData.append('yearsOfExperience', yearsOfExperience);
-  }
-  if (targetRole) {
-    formData.append('targetRole', targetRole);
-  }
+): Promise<AnalysisResult & { id: string }> {
 
-  const response = await http.stream('/analyze', formData, signal);
+  const progress = new ProgressHelper<AnalysisStage>(onStage, signal);
 
-  if (!response.ok) {
-    const requestId = response.headers.get('x-request-id') ?? undefined;
-    let message = 'Upload failed';
-    try {
-      const body = (await response.json()) as { message?: string };
-      message = body.message ?? message;
-    } catch { /* ignore */ }
-    throw new ApiError(response.status, message, requestId);
-  }
+  return await progress.run(
+    ANALYSIS_STAGES,
+    async () => {
+      const formData = new FormData();
+      formData.append('resume', file);
+      if (yearsOfExperience) formData.append('yearsOfExperience', yearsOfExperience);
+      if (targetRole)        formData.append('targetRole', targetRole);
 
-  if (!response.body) {
-    throw new ApiError(response.status || 500, 'Server returned no response body');
-  }
+      console.log('[AnalysisService] Calling API...');
+      const response = await axiosInstance.post<{
+        success: boolean;
+        data: AnalysisResult & { id: string };
+      }>('/analyze', formData, { signal });
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let completed = false;
+      console.log('[AnalysisService] Response:', {
+        status:      response.status,
+        hasData:     !!response.data,
+        hasSuccess:  response.data?.success,
+        hasId:       !!(response.data?.data as any)?.id,
+      });
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+      if (!response.data?.success) throw new Error('API returned success: false');
+      if (!response.data?.data)    throw new Error('API response missing data field');
 
-    buffer += decoder.decode(value, { stream: true });
-    const parts = buffer.split('\n\n');
-    buffer = parts.pop() ?? '';
-
-    for (const part of parts) {
-      const line = part.trim();
-      if (line.startsWith(':')) continue;       // heartbeat comment
-      if (!line.startsWith('data:')) continue;
-
-      const json = line.slice('data:'.length).trim();
-      if (!json) continue;
-
-      let event: SSEEvent;
-      try {
-        event = JSON.parse(json) as SSEEvent;
-      } catch {
-        continue; // malformed line — skip
-      }
-
-      if (event.status === 'analyzing') {
-        onStage(event.stage as AnalysisStage, stageProgress(event.stage as AnalysisStage));
-      } else if (event.status === 'complete') {
-        completed = true;
-        return event.data;
-      } else if (event.status === 'error') {
-        throw new ApiError(502, event.message ?? 'Analysis failed on server');
-      }
-    }
-  }
-
-  if (!completed) {
-    throw new ApiError(502, 'Connection closed before analysis completed. Please try again.');
-  }
-
-  // Unreachable but satisfies TypeScript
-  throw new ApiError(500, 'Unexpected end of stream');
+      return response.data.data;
+    },
+    STAGE_DURATIONS
+  );
 }
 
+export async function getById(id: string): Promise<AnalysisResult & { id: string }> {
+  const response = await axiosInstance.get<{
+    success: boolean;
+    data: AnalysisResult & { id: string };
+  }>(`/analyze/${id}`);
+
+  if (!response.data?.success) throw new Error('API returned success: false');
+  if (!response.data?.data)    throw new Error('API response missing data field');
+
+  return response.data.data;
+}

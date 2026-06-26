@@ -1,9 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRef } from 'react';
 import * as analysisService from '@/services/analysisService';
 import { useAnalysisStore } from '@/store/analysisUIStore';
 import { AnalysisResult } from '@/types';
-
-let activeController: AbortController | null = null;
 
 export interface AnalysisInput {
   file: File;
@@ -11,81 +10,88 @@ export interface AnalysisInput {
   targetRole?: string;
 }
 
+export type AnalysisResponse = AnalysisResult & { id: string };
+
 export interface LatestAnalysisCache {
-  result: AnalysisResult | null;
+  result: AnalysisResponse | null;
   error: Error | null;
 }
 
 export function useAnalyzeMutation() {
   const queryClient = useQueryClient();
   const { setStageProgress, setFile } = useAnalysisStore();
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const mutation = useMutation<AnalysisResult, Error, AnalysisInput>({
-    mutationFn: async ({ file, yearsOfExperience, targetRole }: AnalysisInput) => {
-      activeController?.abort();
-      activeController = new AbortController();
+  const mutation = useMutation<AnalysisResponse, Error, AnalysisInput>({
+    mutationFn: async ({ file, yearsOfExperience, targetRole }) => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      
+      abortControllerRef.current = new AbortController();
+      const signal = abortControllerRef.current.signal;
 
       setFile(file);
       setStageProgress('uploading', 0);
 
       try {
-        const result = await analysisService.run(
+        return await analysisService.run(
           file,
-          activeController.signal,
-          (stage, progress) => {
-            setStageProgress(stage, progress);
-          },
+          signal,
+          (stage, progress) => setStageProgress(stage, progress),
           yearsOfExperience,
           targetRole
         );
-        return result;
-      } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') {
-          setStageProgress(null, 0);
-        }
-        throw err;
       } finally {
-        activeController = null;
+        abortControllerRef.current = null;
       }
     },
     onSuccess: (data) => {
-      setStageProgress(null, 0); // Clear the analyzing state
-      queryClient.setQueryData<LatestAnalysisCache>(['latest-analysis'], {
-        result: data,
-        error: null,
+      setStageProgress(null, 0);
+      queryClient.setQueryData<LatestAnalysisCache>(['latest-analysis'], { 
+        result: data, 
+        error: null 
       });
       queryClient.invalidateQueries({ queryKey: ['history'] });
     },
     onError: (err) => {
       setStageProgress(null, 0);
-      queryClient.setQueryData<LatestAnalysisCache>(['latest-analysis'], {
-        result: null,
-        error: err,
+      queryClient.setQueryData<LatestAnalysisCache>(['latest-analysis'], { 
+        result: null, 
+        error: err 
       });
     },
   });
 
   const abort = (onAbort?: () => void) => {
-    if (activeController) {
-      activeController.abort();
-      activeController = null;
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
       setStageProgress(null, 0);
       mutation.reset();
       onAbort?.();
     }
   };
 
-  return {
-    ...mutation,
-    abort,
-  };
+  return { ...mutation, abort };
 }
 
 export function useLatestAnalysisQuery() {
   return useQuery<LatestAnalysisCache>({
     queryKey: ['latest-analysis'],
-    queryFn: () => ({ result: null, error: null }), // Dummy function (never called due to enabled: false)
-    enabled: false, // read-only cache accessor
+    queryFn: () => ({ result: null, error: null }),
+    enabled: false,
   });
 }
 
+export function useAnalysisResultQuery(id?: string) {
+  return useQuery<AnalysisResponse>({
+    queryKey: ['analysis-result', id],
+    queryFn: async () => {
+      if (!id) throw new Error('Analysis ID is required');
+      return await analysisService.getById(id);
+    },
+    enabled: !!id,
+    staleTime: 1000 * 60 * 60, // 1 hour
+  });
+}

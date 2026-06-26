@@ -51,7 +51,7 @@ export default function TermsPage() {
         <div className="max-w-3xl mx-auto px-6">
           <FadeUp>
             <div className="prose prose-gray max-w-none">
-              <div className="p-5 rounded-xl bg-blue-50 border border-blue-200 mb-10">
+              <div className="p-5 rounded-sm bg-blue-50 border border-blue-200 mb-10">
                 <p className="text-sm text-blue-800 leading-relaxed m-0">
                   <strong>Summary:</strong> ResuPulse is an AI-powered resume analysis tool provided "as is" for free. You're responsible for the content you upload. We're not liable for hiring decisions or job outcomes. Don't abuse the service. Use it ethically and legally.
                 </p>
@@ -282,12 +282,12 @@ export default function TermsPage() {
           </FadeUp>
 
           {/* CTA */}
-          <FadeUp delay={0.2} className="mt-12 p-6 rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-pink-50 text-center">
+          <FadeUp delay={0.2} className="mt-12 p-6 rounded-sm border border-violet-100 bg-gradient-to-br from-violet-50 to-pink-50 text-center">
             <h3 className="text-xl font-bold text-gray-900 mb-3">Ready to get started?</h3>
             <p className="text-sm text-gray-600 mb-5">By using ResuPulse, you agree to these Terms of Service.</p>
             <Link
               href="/analyze"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white transition-all hover:opacity-90"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-sm font-bold text-white transition-all hover:opacity-90"
               style={{ background: 'linear-gradient(135deg, #7c3aed, #ec4899)' }}
             >
               Analyze My Resume Free →

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/Button';
 import { AnalysisProgress } from '@/components/analysis/AnalysisProgress';
 import { useCompareStore } from '@/store/compareUIStore';
@@ -61,8 +60,8 @@ export default function ComparePage() {
   };
 
   return (
-    <AppShell>
-        <div className="max-w-5xl mx-auto space-y-8">
+    <div>
+        <div className="space-y-8">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -155,7 +154,7 @@ export default function ComparePage() {
             )}
           </AnimatePresence>
         </div>
-      </AppShell>
+      </div>
   );
 }
 

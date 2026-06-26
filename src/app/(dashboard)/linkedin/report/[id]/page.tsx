@@ -3,9 +3,8 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/Button';
-import { http } from '@/lib/httpClient';
+import { getLinkedInById } from '@/services/linkedinService';
 
 interface LinkedInResult {
   id: string;
@@ -27,11 +26,6 @@ interface LinkedInResult {
   headline_suggestions: string[];
 }
 
-async function fetchLinkedIn(id: string): Promise<LinkedInResult> {
-  const response = await http.get(`/linkedin/${id}`) as { data: LinkedInResult };
-  return response.data;
-}
-
 export default function LinkedInResultPage() {
   const params = useParams();
   const router = useRouter();
@@ -39,27 +33,27 @@ export default function LinkedInResultPage() {
 
   const { data: result, isLoading, error } = useQuery({
     queryKey: ['linkedin', id],
-    queryFn: () => fetchLinkedIn(id!),
+    queryFn: () => getLinkedInById(id!),
     enabled: !!id,
   });
 
   if (isLoading) {
     return (
-      <AppShell>
+      <div>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)] mx-auto mb-4"></div>
             <p className="text-sm text-[var(--text-muted)]">Loading LinkedIn analysis...</p>
           </div>
         </div>
-      </AppShell>
+      </div>
     );
   }
 
   if (error || !result) {
     return (
-      <AppShell>
-        <div className="max-w-2xl mx-auto py-12">
+      <div>
+        <div>
           <div className="bg-red-50 border border-red-200 rounded-[var(--radius-lg)] p-6">
             <div className="flex items-start gap-3 mb-4">
               <div className="shrink-0 w-5 h-5 text-red-600">
@@ -77,7 +71,7 @@ export default function LinkedInResultPage() {
             </Button>
           </div>
         </div>
-      </AppShell>
+      </div>
     );
   }
 
@@ -97,8 +91,8 @@ export default function LinkedInResultPage() {
   };
 
   return (
-    <AppShell>
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div>
+      <div className="space-y-8">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -144,7 +138,7 @@ export default function LinkedInResultPage() {
                     <p className="text-sm font-medium text-[var(--text-primary)]">{section.section}</p>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-bold text-[var(--text-primary)]">{section.score}%</span>
-                      <span className={`text-xs px-2 py-1 rounded-md ${getStatusColor(section.status)}`}>
+                      <span className={`text-xs px-2 py-1 rounded-sm ${getStatusColor(section.status)}`}>
                         {section.status}
                       </span>
                     </div>
@@ -196,7 +190,7 @@ export default function LinkedInResultPage() {
                 <p className="text-xs font-semibold text-[var(--text-muted)] mb-2">Current Keywords</p>
                 <div className="flex flex-wrap gap-2">
                   {result.keyword_optimization.current_keywords.map((kw, i) => (
-                    <span key={i} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md">
+                    <span key={i} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-sm">
                       {kw}
                     </span>
                   ))}
@@ -206,7 +200,7 @@ export default function LinkedInResultPage() {
                 <p className="text-xs font-semibold text-[var(--text-muted)] mb-2">Suggested Keywords to Add</p>
                 <div className="flex flex-wrap gap-2">
                   {result.keyword_optimization.suggested_keywords.map((kw, i) => (
-                    <span key={i} className="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-md">
+                    <span key={i} className="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-sm">
                       {kw}
                     </span>
                   ))}
@@ -246,6 +240,6 @@ export default function LinkedInResultPage() {
           </div>
         </motion.div>
       </div>
-    </AppShell>
+    </div>
   );
 }

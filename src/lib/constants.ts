@@ -48,3 +48,5 @@ export const SCORE_THRESHOLDS = {
   fair: 50,
 } as const;
 
+export type { AnalysisStage };
+

@@ -54,7 +54,7 @@ export default function JobDetailPage() {
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
+          <div className="bg-white rounded-sm shadow-sm p-8 mb-6">
             <div className="flex items-start justify-between mb-6">
               <div className="flex-1">
                 <h1 className="text-3xl font-bold text-gray-900 mb-4">
@@ -92,7 +92,7 @@ export default function JobDetailPage() {
 
               <button
                 onClick={() => setShowApplicationModal(true)}
-                className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg"
+                className="px-8 py-3 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors font-medium text-lg"
               >
                 Apply Now
               </button>
@@ -109,7 +109,7 @@ export default function JobDetailPage() {
           </div>
 
           {/* Description */}
-          <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
+          <div className="bg-white rounded-sm shadow-sm p-8 mb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">About the Role</h2>
             <div
               className="prose prose-lg max-w-none text-gray-700"
@@ -119,7 +119,7 @@ export default function JobDetailPage() {
 
           {/* Requirements */}
           {job.requirements && job.requirements.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
+            <div className="bg-white rounded-sm shadow-sm p-8 mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Requirements</h2>
               <ul className="space-y-3">
                 {job.requirements.map((req, index) => (
@@ -136,13 +136,13 @@ export default function JobDetailPage() {
 
           {/* Skills */}
           {job.skills && job.skills.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
+            <div className="bg-white rounded-sm shadow-sm p-8 mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Required Skills</h2>
               <div className="flex flex-wrap gap-3">
                 {job.skills.map((skill, index) => (
                   <span
                     key={index}
-                    className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium"
+                    className="px-4 py-2 bg-blue-50 text-blue-700 rounded-sm text-sm font-medium"
                   >
                     {skill}
                   </span>
@@ -152,14 +152,14 @@ export default function JobDetailPage() {
           )}
 
           {/* CTA */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-sm p-8 text-center text-white">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-sm shadow-sm p-8 text-center text-white">
             <h2 className="text-2xl font-bold mb-3">Ready to Apply?</h2>
             <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
               Before submitting your application, we'll run a quick AI-powered resume check to ensure it meets our minimum standards. It's free and helps you improve!
             </p>
             <button
               onClick={() => setShowApplicationModal(true)}
-              className="px-8 py-4 bg-white text-blue-600 rounded-lg hover:bg-gray-50 transition-colors font-medium text-lg"
+              className="px-8 py-4 bg-white text-blue-600 rounded-sm hover:bg-gray-50 transition-colors font-medium text-lg"
             >
               Start Application
             </button>

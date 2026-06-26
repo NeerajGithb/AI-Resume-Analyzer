@@ -3,9 +3,8 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/Button';
-import { http } from '@/lib/httpClient';
+import { getComparisonById } from '@/services/resumeCompareService';
 
 interface ComparisonResult {
   id: string;
@@ -29,11 +28,6 @@ interface ComparisonResult {
   file2Name: string;
 }
 
-async function fetchComparison(id: string): Promise<ComparisonResult> {
-  const response = await http.get(`/compare/${id}`) as { data: ComparisonResult };
-  return response.data;
-}
-
 export default function CompareResultPage() {
   const params = useParams();
   const router = useRouter();
@@ -41,27 +35,27 @@ export default function CompareResultPage() {
 
   const { data: result, isLoading, error } = useQuery({
     queryKey: ['comparison', id],
-    queryFn: () => fetchComparison(id!),
+    queryFn: () => getComparisonById(id!),
     enabled: !!id,
   });
 
   if (isLoading) {
     return (
-      <AppShell>
+      <div>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)] mx-auto mb-4"></div>
             <p className="text-sm text-[var(--text-muted)]">Loading comparison...</p>
           </div>
         </div>
-      </AppShell>
+      </div>
     );
   }
 
   if (error || !result) {
     return (
-      <AppShell>
-        <div className="max-w-2xl mx-auto py-12">
+      <div>
+        <div>
           <div className="bg-red-50 border border-red-200 rounded-[var(--radius-lg)] p-6">
             <div className="flex items-start gap-3 mb-4">
               <div className="shrink-0 w-5 h-5 text-red-600">
@@ -79,15 +73,15 @@ export default function CompareResultPage() {
             </Button>
           </div>
         </div>
-      </AppShell>
+      </div>
     );
   }
 
   const winnerName = result.winner === 1 ? 'Resume 1' : result.winner === 2 ? 'Resume 2' : 'Tie';
 
   return (
-    <AppShell>
-      <div className="max-w-5xl mx-auto space-y-8">
+    <div>
+      <div className="space-y-8">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -175,6 +169,6 @@ export default function CompareResultPage() {
           </div>
         </motion.div>
       </div>
-    </AppShell>
+    </div>
   );
 }

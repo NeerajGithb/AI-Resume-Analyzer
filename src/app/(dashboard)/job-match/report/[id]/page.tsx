@@ -1,77 +1,130 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { AppShell } from '@/components/layout/AppShell';
+import { useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
-import { http } from '@/lib/httpClient';
+import { GlobalProgress } from '@/components/common/GlobalProgress';
+import { useJobMatchStore } from '@/store/jobMatchUIStore';
+import { useLatestJobMatchQuery, useJobMatchResultQuery, useJobMatchMutation } from '@/hooks/useJobMatchMutation';
+import { useQueryClient } from '@tanstack/react-query';
+import { JobMatchDashboard } from '@/components/jobMatch/JobMatchDashboard';
+import AppShell from '@/components/layout/AppShell';
 
-interface JobMatchResult {
-  id: string;
-  match_score: number;
-  match_grade: string;
-  matched_keywords: string[];
-  missing_keywords: string[];
-  matched_requirements: string[];
-  missing_requirements: string[];
-  recommendations: Array<{
-    priority: string;
-    action: string;
-    reason: string;
-  }>;
-  overall_verdict: string;
-  fileName: string;
+function AlertIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-red-400">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
+    </svg>
+  );
 }
 
-async function fetchJobMatch(id: string): Promise<JobMatchResult> {
-  const response = await http.get(`/match/${id}`) as { data: JobMatchResult };
-  return response.data;
+function ArrowLeftIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="19" y1="12" x2="5" y2="12" />
+      <polyline points="12 19 5 12 12 5" />
+    </svg>
+  );
 }
 
 export default function JobMatchResultPage() {
-  const params = useParams();
   const router = useRouter();
+  const params = useParams();
   const id = typeof params.id === 'string' ? params.id : null;
+  const queryClient = useQueryClient();
 
-  const { data: result, isLoading, error } = useQuery({
-    queryKey: ['job-match', id],
-    queryFn: () => fetchJobMatch(id!),
-    enabled: !!id,
+  // Check if this is a temp ID (base64 encoded string containing 'matching')
+  const isTempToken = id ? (() => {
+    try {
+      const decoded = atob(id.replace(/-/g, '+').replace(/_/g, '/'));
+      return decoded.startsWith('matching:');
+    } catch {
+      return false;
+    }
+  })() : false;
+
+  const { resume, stage, progress, reset } = useJobMatchStore();
+  const { abort } = useJobMatchMutation();
+
+  const { data: cache } = useLatestJobMatchQuery();
+  const cacheResult = cache?.result ?? null;
+  const cacheError = cache?.error ?? null;
+
+  const { data: apiResult, isPending: isLoadingApi, error: apiError } = useJobMatchResultQuery(
+    isTempToken ? undefined : id || undefined
+  );
+
+  const result = cacheResult || apiResult || null;
+  const error = cacheError || apiError || null;
+  const isLoading = !cacheResult && isLoadingApi && !isTempToken;
+
+  // Show progress when: stage is active, temp token without result, or loading
+  const showProgress = stage || (isTempToken && !result) || isLoading;
+
+  console.log('[JobMatchReport] Debug:', {
+    id,
+    isTempToken,
+    stage,
+    progress,
+    hasResult: !!result,
+    isLoading,
+    showProgress,
+    cacheResult: !!cacheResult,
+    apiResult: !!apiResult,
   });
 
-  if (isLoading) {
+  useEffect(() => {
+    if (isTempToken && result?.id && !stage) {
+      console.log('[JobMatchReport] Replacing temp token with real ID:', result.id);
+      router.replace(`/job-match/report/${result.id}`);
+    }
+  }, [isTempToken, result?.id, stage, router]);
+
+  const handleReset = () => {
+    reset();
+    queryClient.setQueryData(['latest-job-match'], undefined);
+    router.push('/job-match');
+  };
+
+  const handleGoBack = () => router.push('/job-match');
+
+  /* ── No resume / result / stage ── */
+  if (!resume && !result && !stage && !isLoading && !isTempToken) {
     return (
       <AppShell>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)] mx-auto mb-4"></div>
-            <p className="text-sm text-[var(--text-muted)]">Loading job match results...</p>
+        <div className="min-h-screen flex items-center justify-center p-6">
+          <div className="text-center space-y-4 max-w-md">
+            <div className="w-16 h-16 rounded-[var(--radius-lg)] bg-gray-100 flex items-center justify-center mx-auto">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[var(--text-subtle)]">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-[var(--text-primary)]">No match analysis found</h2>
+              <p className="text-sm text-[var(--text-muted)] mt-1">Upload a resume and job description to see match results.</p>
+            </div>
+            <Button variant="default" onClick={handleGoBack}>
+              <ArrowLeftIcon />
+              Start New Match
+            </Button>
           </div>
         </div>
       </AppShell>
     );
   }
 
-  if (error || !result) {
+  /* ── Fetching from API ── */
+  if (isLoading) {
     return (
       <AppShell>
-        <div className="max-w-2xl mx-auto py-12">
-          <div className="bg-red-50 border border-red-200 rounded-[var(--radius-lg)] p-6">
-            <div className="flex items-start gap-3 mb-4">
-              <div className="shrink-0 w-5 h-5 text-red-600">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-semibold text-red-900">Error Loading Results</h3>
-                <p className="text-sm text-red-700 mt-1">Could not load this job match result.</p>
-              </div>
-            </div>
-            <Button variant="secondary" onClick={() => router.push('/job-match')}>
-              Back to Job Match
-            </Button>
+        <div className="min-h-screen flex items-center justify-center p-6">
+          <div className="bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-12 shadow-[var(--shadow-xs)] text-center max-w-md">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)] mx-auto mb-4" />
+            <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-2">Loading Match Results...</h2>
+            <p className="text-xs text-[var(--text-muted)]">Please wait while we fetch your results</p>
           </div>
         </div>
       </AppShell>
@@ -80,87 +133,83 @@ export default function JobMatchResultPage() {
 
   return (
     <AppShell>
-      <div className="max-w-4xl mx-auto space-y-8">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-2xl font-bold text-[var(--text-primary)]">Job Match Result</h1>
-              <p className="text-sm text-[var(--text-muted)] mt-1">{result.fileName}</p>
-            </div>
-            <Button variant="secondary" onClick={() => router.push('/job-match')}>
-              New Match Analysis
-            </Button>
-          </div>
+      <AnimatePresence mode="wait">
 
-          <div className="bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-xs)]">
-            <div className="flex items-center justify-between mb-6">
+        {/* ── Matching: full-page progress ── */}
+        {stage && (
+          <motion.div
+            key="progress"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <GlobalProgress
+              title="Matching Resume to Job"
+              stages={['uploading', 'parsing', 'matching', 'finalizing']}
+              stageMeta={{
+                uploading: { label: 'Uploading', desc: 'Uploading your resume' },
+                parsing: { label: 'Parsing', desc: 'Extracting resume content' },
+                matching: { label: 'Matching', desc: 'Comparing against job requirements' },
+                finalizing: { label: 'Finalizing', desc: 'Preparing your match report' },
+              }}
+              stage={stage}
+              progress={progress}
+              onCancel={() => {
+                abort();
+                router.push('/job-match');
+              }}
+            />
+          </motion.div>
+        )}
+
+        {/* ── Error state ── */}
+        {error && !stage && !result && (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="min-h-screen flex items-center justify-center p-6"
+          >
+            <div className="text-center space-y-4 max-w-md">
+              <div className="w-16 h-16 rounded-[var(--radius-lg)] bg-red-50 border border-red-100 flex items-center justify-center mx-auto">
+                <AlertIcon />
+              </div>
               <div>
-                <h2 className="text-lg font-bold text-[var(--text-primary)]">Match Score</h2>
-                <p className="text-sm text-[var(--text-muted)]">Grade: {result.match_grade}</p>
+                <h2 className="text-base font-semibold text-[var(--text-primary)]">Match analysis failed</h2>
+                <p className="text-sm text-[var(--text-muted)] mt-1 leading-relaxed">
+                  {(error as Error)?.message || 'An error occurred during job matching'}
+                </p>
               </div>
-              <div className="text-4xl font-bold text-[var(--accent)]">{result.match_score}%</div>
-            </div>
-            <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{result.overall_verdict}</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-xs)]">
-              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Matched Keywords</h3>
-              <div className="flex flex-wrap gap-2">
-                {result.matched_keywords.map((kw, i) => (
-                  <span key={i} className="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-md">{kw}</span>
-                ))}
+              <div className="flex items-center gap-2 justify-center">
+                <Button variant="secondary" size="sm" onClick={handleGoBack}>
+                  <ArrowLeftIcon />
+                  Go back
+                </Button>
+                <Button variant="default" size="sm" onClick={() => router.refresh()}>
+                  Try again
+                </Button>
               </div>
             </div>
+          </motion.div>
+        )}
 
-            <div className="bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-xs)]">
-              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Missing Keywords</h3>
-              <div className="flex flex-wrap gap-2">
-                {result.missing_keywords.map((kw, i) => (
-                  <span key={i} className="px-2 py-1 bg-red-50 text-red-700 text-xs rounded-md">{kw}</span>
-                ))}
-              </div>
-            </div>
-          </div>
+        {/* ── Results ── */}
+        {result && !stage && (
+          <motion.div
+            key="results"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="p-6"
+          >
+            <JobMatchDashboard result={result} onReset={handleReset} />
+          </motion.div>
+        )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-xs)]">
-              <h3 className="text-sm font-semibold text-green-700 mb-3">Matched Requirements</h3>
-              <ul className="space-y-2">
-                {result.matched_requirements.map((req, i) => (
-                  <li key={i} className="text-sm text-[var(--text-secondary)]">✓ {req}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-xs)]">
-              <h3 className="text-sm font-semibold text-red-700 mb-3">Missing Requirements</h3>
-              <ul className="space-y-2">
-                {result.missing_requirements.map((req, i) => (
-                  <li key={i} className="text-sm text-[var(--text-secondary)]">✗ {req}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-xs)]">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Recommendations</h3>
-            <div className="space-y-3">
-              {result.recommendations.map((rec, idx) => (
-                <div key={idx} className="border-l-2 border-[var(--accent)] pl-4">
-                  <p className="text-xs font-semibold text-[var(--text-primary)] uppercase tracking-wide">{rec.priority}</p>
-                  <p className="text-sm font-medium text-[var(--text-primary)] mt-1">{rec.action}</p>
-                  <p className="text-xs text-[var(--text-muted)] mt-1">{rec.reason}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-      </div>
+      </AnimatePresence>
     </AppShell>
   );
 }

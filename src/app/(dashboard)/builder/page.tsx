@@ -1,12 +1,22 @@
 'use client';
 
-import { useState, useRef, useEffect, FormEvent } from 'react';
-import { motion } from 'framer-motion';
-import { AppShell } from '@/components/layout/AppShell';
-import { Button } from '@/components/ui/Button';
+import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { generateResume } from '@/services/resumeBuilderService';
-import { ApiError } from '@/lib/httpClient';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/Button';
+import { BuilderForm } from '@/components/builder/BuilderForm';
+import {
+  BenefitSection,
+  HowItWorksSection,
+  FeatureGrid,
+  FAQSection,
+  CTASection,
+  WhatYouGetSection,
+} from '@/components/landing';
+import { useBuilderMutation } from '@/hooks/useBuilderMutation';
+import { useBuilderStore } from '@/store/builderUIStore';
+import AppShell from '@/components/layout/AppShell';
 
 interface FormData {
   name: string;
@@ -20,194 +30,24 @@ interface FormData {
   location: string;
   graduationYear: string;
   targetRole: string;
-  projectsExperience?: string; // Optional: brief description of real projects
+  projectsExperience?: string;
   skills: string[];
 }
-
-// Comprehensive skills list
-const AVAILABLE_SKILLS = [
-  // Programming Languages
-  'JavaScript', 'TypeScript', 'Python', 'Java', 'C', 'C++', 'C#', 'Go', 'Rust', 'PHP', 'Ruby', 'Swift', 'Kotlin', 'Dart', 'Scala', 'R', 'Perl', 'Elixir', 'Haskell', 'Clojure', 'Lua', 'Shell Scripting', 'Bash', 'PowerShell',
-  
-  // Frontend Frameworks & Libraries
-  'React.js', 'Next.js', 'Vue.js', 'Vue 3', 'Nuxt.js', 'Angular', 'Angular 2+', 'Svelte', 'SvelteKit', 'Solid.js', 'Qwik', 'Preact', 'Alpine.js', 'Ember.js', 'Backbone.js', 'jQuery',
-  
-  // Frontend UI & Styling
-  'HTML5', 'CSS3', 'Tailwind CSS', 'Bootstrap', 'Material-UI', 'MUI', 'Ant Design', 'Chakra UI', 'Shadcn UI', 'Radix UI', 'Mantine', 'Sass', 'SCSS', 'Less', 'Styled Components', 'Emotion', 'CSS Modules', 'PostCSS',
-  
-  // State Management
-  'Redux', 'Redux Toolkit', 'Zustand', 'Recoil', 'Jotai', 'MobX', 'XState', 'Context API', 'React Query', 'TanStack Query', 'SWR', 'Apollo Client', 'Relay',
-  
-  // Backend Frameworks
-  'Node.js', 'Express.js', 'Koa.js', 'Hapi.js', 'Fastify', 'NestJS', 'Django', 'Flask', 'FastAPI', 'Spring Boot', 'Spring', 'ASP.NET', 'ASP.NET Core', 'Laravel', 'Symfony', 'Ruby on Rails', 'Sinatra', 'Phoenix', 'Gin', 'Echo', 'Fiber',
-  
-  // Databases - SQL
-  'MySQL', 'PostgreSQL', 'SQLite', 'MariaDB', 'Microsoft SQL Server', 'Oracle Database', 'Amazon Aurora',
-  
-  // Databases - NoSQL
-  'MongoDB', 'Redis', 'Cassandra', 'DynamoDB', 'CouchDB', 'Neo4j', 'InfluxDB', 'Elasticsearch',
-  
-  // Database Tools & ORMs
-  'Prisma', 'TypeORM', 'Sequelize', 'Mongoose', 'Drizzle', 'Knex.js', 'Hibernate', 'Entity Framework',
-  
-  // Cloud Platforms
-  'AWS', 'Amazon Web Services', 'Azure', 'Microsoft Azure', 'Google Cloud', 'GCP', 'DigitalOcean', 'Heroku', 'Vercel', 'Netlify', 'Railway', 'Render', 'Fly.io', 'Cloudflare', 'Linode', 'Oracle Cloud',
-  
-  // AWS Services
-  'EC2', 'S3', 'Lambda', 'RDS', 'CloudFront', 'Route 53', 'ECS', 'EKS', 'Elastic Beanstalk', 'API Gateway', 'CloudWatch', 'IAM', 'SQS', 'SNS',
-  
-  // DevOps & CI/CD
-  'Docker', 'Kubernetes', 'K8s', 'Jenkins', 'GitHub Actions', 'GitLab CI/CD', 'CircleCI', 'Travis CI', 'Azure DevOps', 'ArgoCD', 'Terraform', 'Ansible', 'Puppet', 'Chef', 'Vagrant', 'Nginx', 'Apache', 'PM2',
-  
-  // AI & Machine Learning
-  'OpenAI API', 'GPT', 'ChatGPT', 'Claude API', 'Groq API', 'Anthropic Claude API', 'Gemini API', 'TensorFlow', 'PyTorch', 'Keras', 'Scikit-learn', 'Pandas', 'NumPy', 'Matplotlib', 'Seaborn', 'Hugging Face', 'LangChain', 'LlamaIndex', 'Transformers', 'YOLO', 'Computer Vision', 'NLP', 'Deep Learning', 'Machine Learning',
-  
-  // Testing
-  'Jest', 'Vitest', 'Mocha', 'Chai', 'Jasmine', 'Cypress', 'Playwright', 'Selenium', 'Puppeteer', 'Testing Library', 'React Testing Library', 'Enzyme', 'Supertest', 'JUnit', 'PyTest', 'unittest',
-  
-  // Version Control
-  'Git', 'GitHub', 'GitLab', 'Bitbucket', 'SVN', 'Mercurial',
-  
-  // APIs & Protocols
-  'REST API', 'RESTful API', 'GraphQL', 'gRPC', 'WebSockets', 'Socket.io', 'tRPC', 'JSON', 'XML', 'SOAP', 'Protocol Buffers', 'HTTP', 'TCP/IP',
-  
-  // Authentication & Security
-  'JWT', 'OAuth', 'OAuth 2.0', 'Auth0', 'Firebase Auth', 'Passport.js', 'bcrypt', 'SSL/TLS', 'HTTPS', 'CORS', 'CSRF Protection', 'XSS Prevention',
-  
-  // Build Tools & Bundlers
-  'Webpack', 'Vite', 'Rollup', 'Parcel', 'esbuild', 'Turbopack', 'Babel', 'SWC', 'Gulp', 'Grunt', 'npm', 'Yarn', 'pnpm', 'Bun',
-  
-  // Mobile Development
-  'React Native', 'Flutter', 'Expo', 'SwiftUI', 'Android Studio', 'Xcode', 'Ionic', 'Cordova', 'Capacitor',
-  
-  // CMS & E-commerce
-  'WordPress', 'Shopify', 'WooCommerce', 'Strapi', 'Contentful', 'Sanity', 'Prismic', 'Headless CMS', 'Ghost', 'Magento',
-  
-  // Real-time & Backend-as-a-Service
-  'Firebase', 'Supabase', 'Appwrite', 'PocketBase', 'Firestore', 'Realtime Database', 'Pusher', 'Ably',
-  
-  // Message Queues & Streaming
-  'RabbitMQ', 'Apache Kafka', 'Redis Pub/Sub', 'AWS SQS', 'AWS SNS', 'Azure Service Bus',
-  
-  // Monitoring & Logging
-  'Sentry', 'LogRocket', 'Datadog', 'New Relic', 'Grafana', 'Prometheus', 'ELK Stack', 'Splunk', 'CloudWatch',
-  
-  // Design & Prototyping
-  'Figma', 'Adobe XD', 'Sketch', 'InVision', 'Zeplin', 'Photoshop', 'Illustrator', 'Canva',
-  
-  // Project Management & Collaboration
-  'Jira', 'Confluence', 'Trello', 'Asana', 'Monday.com', 'Linear', 'Notion', 'Slack', 'Microsoft Teams', 'Discord',
-  
-  // IDEs & Editors
-  'VS Code', 'Visual Studio Code', 'IntelliJ IDEA', 'WebStorm', 'PyCharm', 'Eclipse', 'Sublime Text', 'Vim', 'Neovim', 'Emacs',
-  
-  // Blockchain & Web3
-  'Solidity', 'Ethereum', 'Web3.js', 'Ethers.js', 'Smart Contracts', 'Blockchain', 'NFT', 'DeFi',
-  
-  // Game Development
-  'Unity', 'Unreal Engine', 'Godot', 'Three.js', 'Babylon.js', 'Phaser', 'Pygame',
-  
-  // Data Science & Analytics
-  'Tableau', 'Power BI', 'Excel', 'Google Analytics', 'Mixpanel', 'Amplitude', 'Jupyter Notebook', 'Apache Spark', 'Hadoop',
-  
-  // Payment Integration
-  'Stripe', 'PayPal', 'Razorpay', 'Square', 'Braintree', 'Paytm',
-  
-  // File Storage & CDN
-  'Cloudinary', 'AWS S3', 'Backblaze', 'ImageKit', 'UploadCare', 'Fastly CDN', 'Akamai', 'CDN',
-  
-  // Methodologies & Concepts
-  'Agile', 'Scrum', 'Kanban', 'TDD', 'BDD', 'Test-Driven Development', 'CI/CD', 'Microservices', 'Monolithic Architecture', 'Serverless', 'Event-Driven Architecture', 'Domain-Driven Design', 'DDD', 'SOLID Principles', 'Design Patterns', 'OOP', 'Object-Oriented Programming', 'Functional Programming', 'System Design', 'Data Structures', 'Algorithms', 'DSA', 'Clean Code', 'Clean Architecture', 'Responsive Design', 'Mobile-First Design', 'SEO', 'Web Accessibility', 'WCAG', 'Performance Optimization', 'Code Review', 'Load Balancing', 'Caching', 'Rate Limiting', 'RBAC', 'Role-Based Access Control',
-  
-  // Technology Stacks (Acronyms)
-  'MERN Stack', 'MEAN Stack', 'LAMP Stack', 'LEMP Stack', 'JAMstack', 'T3 Stack', 'Full Stack',
-  
-  // Other Tools
-  'Postman', 'Insomnia', 'Swagger', 'OpenAPI', 'Linux', 'Ubuntu', 'macOS', 'Windows', 'WSL', 'SSH', 'FTP', 'DNS', 'VPN',
-];
-
-const ROLE_OPTIONS = [
-  // Software & Engineering
-  { value: 'Software Engineer', label: 'Software Engineer' },
-  { value: 'Frontend Developer', label: 'Frontend Developer' },
-  { value: 'Backend Developer', label: 'Backend Developer' },
-  { value: 'Full Stack Developer', label: 'Full Stack Developer' },
-  { value: 'DevOps Engineer', label: 'DevOps Engineer' },
-  { value: 'Data Engineer', label: 'Data Engineer' },
-  { value: 'Mobile Developer', label: 'Mobile Developer' },
-  { value: 'QA Engineer', label: 'QA Engineer' },
-  { value: 'Security Engineer', label: 'Security Engineer' },
-  { value: 'Cloud Architect', label: 'Cloud Architect' },
-  
-  // Data & AI
-  { value: 'Data Scientist', label: 'Data Scientist' },
-  { value: 'Data Analyst', label: 'Data Analyst' },
-  { value: 'Machine Learning Engineer', label: 'Machine Learning Engineer' },
-  { value: 'AI Engineer', label: 'AI Engineer' },
-  { value: 'Business Analyst', label: 'Business Analyst' },
-  
-  // Product & Design
-  { value: 'Product Manager', label: 'Product Manager' },
-  { value: 'Product Designer', label: 'Product Designer' },
-  { value: 'UX Designer', label: 'UX Designer' },
-  { value: 'UI Designer', label: 'UI Designer' },
-  { value: 'UX Researcher', label: 'UX Researcher' },
-  
-  // Marketing & Sales
-  { value: 'Marketing Manager', label: 'Marketing Manager' },
-  { value: 'Digital Marketing Specialist', label: 'Digital Marketing Specialist' },
-  { value: 'Content Writer', label: 'Content Writer' },
-  { value: 'SEO Specialist', label: 'SEO Specialist' },
-  { value: 'Sales Manager', label: 'Sales Manager' },
-  { value: 'Account Manager', label: 'Account Manager' },
-  
-  // Operations & Finance
-  { value: 'Operations Manager', label: 'Operations Manager' },
-  { value: 'Project Manager', label: 'Project Manager' },
-  { value: 'Scrum Master', label: 'Scrum Master' },
-  { value: 'Financial Analyst', label: 'Financial Analyst' },
-  { value: 'Accountant', label: 'Accountant' },
-  
-  // HR & Administration
-  { value: 'HR Manager', label: 'HR Manager' },
-  { value: 'Recruiter', label: 'Recruiter' },
-  { value: 'Administrative Assistant', label: 'Administrative Assistant' },
-  
-  // Customer Support
-  { value: 'Customer Support', label: 'Customer Support' },
-  { value: 'Customer Success Manager', label: 'Customer Success Manager' },
-  { value: 'Technical Support', label: 'Technical Support' },
-];
 
 export default function BuilderPage() {
   const router = useRouter();
   const skillsDropdownRef = useRef<HTMLDivElement>(null);
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    phone: '',
-    email: '',
-    linkedin: '',
-    github: '',
-    leetcode: '',
-    degree: '',
-    institution: '',
-    location: '',
-    graduationYear: '',
-    targetRole: '',
-    projectsExperience: '',
-    skills: [],
-  });
-  const [loading, setLoading] = useState(false);
-  const [currentStage, setCurrentStage] = useState<number>(0);
+  const { formData: storeFormData, setFormData: setStoreFormData } = useBuilderStore();
+  const { mutate, isPending } = useBuilderMutation();
+  
+  const [localFormData, setLocalFormData] = useState<FormData>(storeFormData as FormData);
   const [skillSearch, setSkillSearch] = useState('');
   const [showSkillDropdown, setShowSkillDropdown] = useState(false);
 
-  const LOADING_STAGES = [
-    'Analyzing your information...',
-    'Organizing skills and experience...',
-    'Generating professional content...',
-    'Creating LaTeX resume...',
-  ];
+  // Sync localFormData changes to store for persistence
+  useEffect(() => {
+    setStoreFormData(localFormData);
+  }, [localFormData, setStoreFormData]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -220,454 +60,535 @@ export default function BuilderPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const filteredSkills = AVAILABLE_SKILLS.filter(
-    skill => 
-      skill.toLowerCase().includes(skillSearch.toLowerCase()) &&
-      !formData.skills.includes(skill)
-  );
-
-  const addSkill = (skill: string) => {
-    if (!formData.skills.includes(skill)) {
-      setFormData({ ...formData, skills: [...formData.skills, skill] });
-    }
-    setSkillSearch('');
-    setShowSkillDropdown(false);
-  };
-
-  const removeSkill = (skillToRemove: string) => {
-    setFormData({ 
-      ...formData, 
-      skills: formData.skills.filter(s => s !== skillToRemove) 
-    });
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Validate required fields
-    if (!formData.name || !formData.phone || !formData.email || !formData.degree || !formData.institution || !formData.targetRole) {
+    if (!localFormData.name || !localFormData.phone || !localFormData.email || !localFormData.degree || !localFormData.institution || !localFormData.targetRole) {
       alert('Please fill in all required fields');
       return;
     }
 
-    if (formData.skills.length === 0) {
+    if (localFormData.skills.length === 0) {
       alert('Please select at least a few skills');
       return;
     }
 
-    setLoading(true);
-    setCurrentStage(0);
-    
-    // Show fake loading stages with delays
-    const delays = [800, 1000, 1200]; // Delays for each stage
-    
-    for (let i = 0; i < delays.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, delays[i]));
-      setCurrentStage(i + 1);
-    }
-    
-    // Final stage - now call the actual API
-    try {
-      // Convert skills array to comma-separated string for backend
-      const dataToSend = {
-        ...formData,
-        projectsExperience: formData.projectsExperience || undefined,
-        skills: formData.skills.join(', ')
-      };
-      
-      const result = await generateResume(dataToSend as any);
-      
-      // Small delay to show completion
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Redirect to result page
-      router.push(`/builder/report/${result.id}`);
-    } catch (error) {
-      setLoading(false);
-      setCurrentStage(0);
-      if (error instanceof ApiError) {
-        alert(error.message);
-      } else {
-        alert('Failed to generate resume. Please try again.');
+    if (isPending) return;
+
+    // Store form data in Zustand store
+    setStoreFormData(localFormData);
+
+    // Generate temp ID
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 15);
+    const payload = btoa(`processing:${timestamp}:${random}`).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    const tempToken = payload;
+
+    router.push(`/builder/report/${tempToken}`);
+
+    // Convert skills array to comma-separated string for backend
+    const dataToSend = {
+      ...localFormData,
+      projectsExperience: localFormData.projectsExperience || undefined,
+      skills: localFormData.skills.join(', ')
+    };
+
+    mutate(
+      dataToSend as any,
+      {
+        onSuccess: (data) => {
+          if (!data?.id) {
+            console.error('[Builder] Invalid response: missing ID', data);
+            return;
+          }
+          console.log('[Builder] Resume generated, replacing URL with ID:', data.id);
+          router.replace(`/builder/report/${data.id}`);
+        },
+        onError: (error) => {
+          console.error('[Builder] Resume generation failed:', error);
+          alert('Failed to generate resume. Please try again.');
+          router.back();
+        }
       }
+    );
+  };
+
+  const handleClear = () => {
+    const emptyFormData: FormData = {
+      name: '',
+      phone: '',
+      email: '',
+      linkedin: '',
+      github: '',
+      leetcode: '',
+      degree: '',
+      institution: '',
+      location: '',
+      graduationYear: '',
+      targetRole: '',
+      projectsExperience: '',
+      skills: [],
+    };
+    setLocalFormData(emptyFormData);
+    setStoreFormData(emptyFormData);
+    setSkillSearch('');
+  };
+
+  const scrollToTop = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   return (
     <AppShell>
-      <div className="max-w-4xl mx-auto p-6">
-        {loading ? (
-          // Loading State - Show stages like analyze page
+      <AnimatePresence mode="wait">
+        {!isPending && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex items-center justify-center min-h-[60vh]"
+            key="content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
           >
-            <div className="w-full max-w-md bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-8 shadow-[var(--shadow-xs)]">
-              <div className="space-y-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-[var(--text-primary)]">Generating Resume</h2>
-                  <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--accent)]"></div>
-                  </div>
-                </div>
+            {/* ── Hero + Form Split Layout ── */}
+            <section className="py-12 bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+              <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
 
-                {/* Progress Bar */}
-                <div className="relative">
-                  <div className="overflow-hidden h-2 text-xs flex rounded-full bg-[var(--bg-subtle)]">
-                    <motion.div
-                      initial={{ width: '0%' }}
-                      animate={{
-                        width: `${((currentStage + 1) / LOADING_STAGES.length) * 100}%`
-                      }}
-                      transition={{ duration: 0.5 }}
-                      className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-violet-600 to-purple-600"
-                    />
-                  </div>
-                </div>
+                  {/* Left: Hero Content */}
+                  <div className="lg:pr-8">
+                    <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+                      Build a Professional Resume with{' '}
+                      <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                        AI-Powered Precision
+                      </span>
+                    </h1>
 
-                {/* Stages */}
-                <div className="space-y-2">
-                  {LOADING_STAGES.map((stageName, idx) => {
-                    const isActive = idx === currentStage;
-                    const isComplete = idx < currentStage;
+                    <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                      Generate a beautiful, ATS-friendly resume in minutes. Our AI creates professional content tailored to your experience and skills — completely free.
+                    </p>
 
-                    return (
-                      <div
-                        key={idx}
-                        className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
-                          isActive
-                            ? 'bg-violet-50 border border-violet-200'
-                            : isComplete
-                            ? 'bg-green-50 border border-green-200'
-                            : 'bg-gray-50 border border-gray-200'
-                        }`}
-                      >
-                        <div
-                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                            isActive
-                              ? 'bg-violet-600 text-white animate-pulse'
-                              : isComplete
-                              ? 'bg-green-600 text-white'
-                              : 'bg-gray-300 text-gray-600'
-                          }`}
-                        >
-                          {isComplete ? '✓' : idx + 1}
+                    <div className="flex flex-wrap items-center gap-4 mb-6 text-sm">
+                      {[
+                        { value: '30K+', label: 'Resumes Generated' },
+                        { value: 'AI-Powered', label: 'Content Creation' },
+                        { value: '2min', label: 'Average Time' },
+                        { value: 'Free', label: 'No Hidden Costs' },
+                      ].map((stat, index) => (
+                        <div key={stat.label} className="flex items-center gap-1">
+                          <span className="font-bold text-blue-700">{stat.value}</span>
+                          <span className="text-gray-600">{stat.label}</span>
+                          {index < 3 && <span className="text-gray-300 ml-3">|</span>}
                         </div>
-                        <span className={`text-sm font-medium ${
-                          isActive ? 'text-violet-900' : isComplete ? 'text-green-900' : 'text-gray-600'
-                        }`}>
-                          {stageName}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ) : (
-          // Form State - Show when not generating
-          <>
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6"
-            >
-              <h1 className="text-2xl font-bold text-[var(--text-primary)]">Resume Builder</h1>
-              <p className="text-sm text-[var(--text-muted)] mt-1">
-                Fill in your details and AI will generate a professional resume
-              </p>
-            </motion.div>
+                      ))}
+                    </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Personal Information */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white rounded-lg border border-[var(--border)] p-6"
-          >
-            <h2 className="text-lg font-semibold mb-4">Personal Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Full Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  placeholder="John Doe"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Phone <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  placeholder="+1 234 567 8900"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  placeholder="john.doe@example.com"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">LinkedIn</label>
-                <input
-                  type="text"
-                  value={formData.linkedin}
-                  onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  placeholder="https://www.linkedin.com/in/yourprofile"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">GitHub</label>
-                <input
-                  type="text"
-                  value={formData.github}
-                  onChange={(e) => setFormData({ ...formData, github: e.target.value })}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  placeholder="https://github.com/yourusername"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">LeetCode (Optional)</label>
-                <input
-                  type="text"
-                  value={formData.leetcode}
-                  onChange={(e) => setFormData({ ...formData, leetcode: e.target.value })}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  placeholder="https://leetcode.com/yourusername"
-                />
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Education */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-lg border border-[var(--border)] p-6"
-          >
-            <h2 className="text-lg font-semibold mb-4">Education & Role</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Degree <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.degree}
-                  onChange={(e) => setFormData({ ...formData, degree: e.target.value })}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  placeholder="Bachelor of Science in Computer Science"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Institution <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.institution}
-                  onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  placeholder="University Name"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Location</label>
-                <input
-                  type="text"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  placeholder="City, State"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Graduation Year</label>
-                <input
-                  type="text"
-                  value={formData.graduationYear}
-                  onChange={(e) => setFormData({ ...formData, graduationYear: e.target.value })}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  placeholder="2020 - 2024"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label htmlFor="target-role" className="block text-sm font-medium mb-1">
-                  Target Role <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="target-role"
-                  value={formData.targetRole}
-                  onChange={(e) => setFormData({ ...formData, targetRole: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-md border border-[var(--border)] bg-white text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent appearance-none cursor-pointer"
-                  style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'right 1rem center',
-                    backgroundSize: '16px',
-                  }}
-                  required
-                >
-                  <option value="">Select target role</option>
-                  {ROLE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-[var(--text-muted)] mt-1">
-                  Select the job role you're targeting with this resume
-                </p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Technical Skills */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white rounded-lg border border-[var(--border)] p-6"
-          >
-            <h2 className="text-lg font-semibold mb-4">Technical Skills</h2>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Select Your Skills
-              </label>
-              
-              {/* Selected Skills */}
-              {formData.skills.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3 p-3 bg-gray-50 rounded-md border border-gray-300">
-                  {formData.skills.map((skill, index) => (
-                    <span
-                      key={`${skill}-${index}`}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white text-sm rounded-full"
-                    >
-                      {skill}
-                      <button
-                        type="button"
-                        onClick={() => removeSkill(skill)}
-                        className="hover:bg-white/20 rounded-full p-0.5"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Search Input */}
-              <div className="relative" ref={skillsDropdownRef}>
-                <input
-                  type="text"
-                  value={skillSearch}
-                  onChange={(e) => {
-                    setSkillSearch(e.target.value);
-                    setShowSkillDropdown(true);
-                  }}
-                  onFocus={() => setShowSkillDropdown(true)}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  placeholder="Type to search skills (e.g., React, Python, Docker)..."
-                />
-
-                {/* Dropdown */}
-                {showSkillDropdown && skillSearch && filteredSkills.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-                    {filteredSkills.slice(0, 20).map((skill) => (
-                      <button
-                        key={skill}
-                        type="button"
-                        onClick={() => addSkill(skill)}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm border-b border-gray-100 last:border-b-0"
-                      >
-                        {skill}
-                      </button>
-                    ))}
+                    <div className="mb-8 rounded-sm overflow-hidden border-2 border-blue-200 shadow-2xl bg-white">
+                      <Image
+                        src="/home.png"
+                        alt="Professional Resume Builder Preview - AI-Generated Content"
+                        width={600}
+                        height={400}
+                        priority
+                        className="w-full h-auto object-cover"
+                        quality={90}
+                      />
+                    </div>
                   </div>
-                )}
+
+                  {/* Right: Builder Form */}
+                  <div className="lg:pl-4">
+                    <form onSubmit={handleSubmit}>
+                      <div className="bg-white border border-gray-200 rounded-sm shadow-xl overflow-hidden sticky top-20">
+
+                        {/* Card header */}
+                        <div className="px-6 pt-6 pb-0">
+                          <div className="flex items-center gap-2.5 mb-5">
+                            <div className="w-8 h-8 rounded-sm bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
+                              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </div>
+                            <div>
+                              <h2 className="text-sm font-bold text-gray-900 leading-tight">Build Your Resume</h2>
+                              <p className="text-[11px] text-gray-500">Free · AI-Powered · Professional Format</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="px-6 pb-5 max-h-[70vh] overflow-y-auto">
+                          <BuilderForm
+                            formData={localFormData}
+                            onFormDataChange={setLocalFormData}
+                            skillSearch={skillSearch}
+                            onSkillSearchChange={setSkillSearch}
+                            showSkillDropdown={showSkillDropdown}
+                            onShowSkillDropdownChange={setShowSkillDropdown}
+                            skillsDropdownRef={skillsDropdownRef}
+                          />
+                        </div>
+
+                        {/* Action footer */}
+                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {localFormData.name && localFormData.email && localFormData.targetRole ? (
+                              <>
+                                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+                                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                </div>
+                                <span className="text-sm font-semibold text-emerald-700 truncate">Ready to generate</span>
+                              </>
+                            ) : (
+                              <span className="text-sm text-gray-400">Fill required fields to begin</span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            {(localFormData.name || localFormData.email) && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleClear}
+                                disabled={isPending}
+                                type="button"
+                              >
+                                Clear
+                              </Button>
+                            )}
+                            <Button
+                              variant="default"
+                              size="default"
+                              type="submit"
+                              disabled={!localFormData.name || !localFormData.email || !localFormData.targetRole || isPending}
+                            >
+                              {isPending ? 'Generating...' : 'Generate Resume →'}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Privacy & Security */}
+                        <div className="border-t border-zinc-200/80 bg-zinc-50/60 px-5 py-4">
+                          <div className="flex items-start gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-white shadow-sm">
+                              <svg
+                                className="h-4 w-4 text-zinc-700"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                />
+                              </svg>
+                            </div>
+
+                            <div className="flex-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-sm font-medium tracking-tight text-zinc-900">
+                                  Your data stays private
+                                </p>
+
+                                <span className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-500">
+                                  Secure
+                                </span>
+                              </div>
+
+                              <p className="mt-1 text-xs leading-relaxed text-zinc-600">
+                                We process your information securely. Your data is never sold, shared, or used for AI training.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+
+                </div>
               </div>
+            </section>
 
-              <p className="text-xs text-[var(--text-muted)] mt-2">
-                💡 Type to search from {AVAILABLE_SKILLS.length}+ skills. Click to add. AI will automatically categorize them.
-              </p>
-              
-              {formData.skills.length === 0 && (
-                <p className="text-xs text-orange-600 mt-2">
-                  ⚠️ Please select at least a few skills
-                </p>
-              )}
-            </div>
-          </motion.div>
+            {/* ── What You Get ── */}
+            <WhatYouGetSection
+              title="What You Get"
+              description="Professional resume generation powered by advanced AI"
+              features={[
+                {
+                  icon: '⚡',
+                  title: 'Lightning Fast Generation',
+                  desc: 'Create your complete professional resume in under 2 minutes. Our AI generates tailored content instantly based on your information.',
+                  highlight: 'Under 2min',
+                },
+                {
+                  icon: '🎯',
+                  title: 'AI-Powered Content',
+                  desc: 'Get professionally written summaries, project descriptions, and achievements. Our AI creates realistic, compelling content that stands out.',
+                  highlight: 'Smart AI',
+                },
+                {
+                  icon: '📄',
+                  title: 'ATS-Friendly Format',
+                  desc: 'Resume is formatted to pass Applicant Tracking Systems used by 95% of companies. Clean structure with proper headings and formatting.',
+                  highlight: 'ATS-Ready',
+                },
+                {
+                  icon: '✨',
+                  title: 'Professional Design',
+                  desc: 'Beautiful, modern layout with optimal spacing and typography. Print-ready PDF format that looks great on screen and paper.',
+                  highlight: 'Print-Ready',
+                },
+                {
+                  icon: '🔤',
+                  title: 'Keyword Optimization',
+                  desc: 'Content includes relevant technical skills and industry keywords that recruiters search for. Improve your chances of being discovered.',
+                  highlight: 'Optimized',
+                },
+                {
+                  icon: '💼',
+                  title: 'Role-Specific Content',
+                  desc: 'Tailor your resume to specific job roles. AI adjusts content tone and focus based on your target position and industry.',
+                  highlight: 'Customized',
+                },
+                {
+                  icon: '📊',
+                  title: 'Complete Sections',
+                  desc: 'Includes all essential sections: Professional Summary, Education, Projects, Technical Skills, and Achievements. Nothing missing.',
+                  highlight: 'Complete',
+                },
+                {
+                  icon: '⬇️',
+                  title: 'Instant PDF Download',
+                  desc: 'Download your professional resume as a high-quality PDF immediately. Share with employers or print for job fairs.',
+                  highlight: 'PDF Export',
+                },
+                {
+                  icon: '🎨',
+                  title: 'Customizable',
+                  desc: 'Add your own projects, links (LinkedIn, GitHub, LeetCode), and optional experiences. Make it uniquely yours.',
+                  highlight: 'Flexible',
+                },
+                {
+                  icon: '🚀',
+                  title: '100% Free',
+                  desc: 'No hidden costs, no subscriptions, no credit card required. Generate unlimited resumes for different roles completely free.',
+                  highlight: 'No Cost',
+                },
+              ]}
+              ctaTitle="Ready to Get Started?"
+              ctaDescription="Fill in your details and let AI create your professional resume!"
+              primaryAction={{
+                label: 'Build Now',
+                onClick: scrollToTop,
+              }}
+            />
 
-          {/* Projects Experience (Optional) */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white rounded-lg border border-[var(--border)] p-6"
-          >
-            <h2 className="text-lg font-semibold mb-4">Projects Experience (Optional)</h2>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Briefly describe any projects you've worked on
-              </label>
-              <textarea
-                value={formData.projectsExperience || ''}
-                onChange={(e) => setFormData({ ...formData, projectsExperience: e.target.value })}
-                className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                rows={4}
-                placeholder="Example: Built an e-commerce website using MERN stack with payment integration. Created a chat application with real-time messaging using Socket.io."
-              />
-              <p className="text-xs text-[var(--text-muted)] mt-2">
-                📝 If you have real projects, mention them briefly. AI will use this to create realistic project descriptions. Leave blank if none.
-              </p>
-            </div>
-          </motion.div>
+            {/* ── Benefits ── */}
+            <BenefitSection
+              title="Why Use Resume Builder?"
+              description="Save hours of work and create professional resumes that get results"
+              benefits={[
+                {
+                  icon: '⚡',
+                  title: 'Save Time',
+                  description:
+                    'Stop spending hours writing and formatting. Our AI generates professional content in minutes, letting you focus on your job search.',
+                },
+                {
+                  icon: '✍️',
+                  title: 'AI-Generated Content',
+                  description:
+                    'Get compelling professional summaries, detailed project descriptions, and impactful achievements written by advanced AI trained on thousands of resumes.',
+                },
+                {
+                  icon: '📄',
+                  title: 'ATS-Optimized',
+                  description:
+                    'Resume format is designed to pass Applicant Tracking Systems. Clean structure, proper headings, and keyword optimization ensure your resume gets seen.',
+                },
+                {
+                  icon: '🎯',
+                  title: 'Role-Specific',
+                  description:
+                    'Tailor content to your target role. Whether you\'re a Software Engineer, Designer, or Data Scientist, get relevant content for your field.',
+                },
+                {
+                  icon: '💼',
+                  title: 'Professional Quality',
+                  description:
+                    'Get resume quality that matches what professional resume writers charge $100+ for. Beautiful design, clear hierarchy, and polished content.',
+                },
+                {
+                  icon: '🔒',
+                  title: 'Private & Secure',
+                  description:
+                    'Your information is processed securely and never shared. We respect your privacy and comply with data protection standards.',
+                },
+              ]}
+            />
 
-          {/* Submit Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="flex justify-end"
-          >
-            <Button type="submit" variant="primary" size="lg" disabled={loading}>
-              {loading ? 'Generating Resume...' : 'Generate Resume'}
-            </Button>
+            {/* ── How It Works ── */}
+            <HowItWorksSection
+              title="Create Your Resume in 3 Simple Steps"
+              description="From information to professional resume in minutes"
+              steps={[
+                {
+                  number: '1',
+                  title: 'Fill Your Information',
+                  description:
+                    'Enter your personal details, education, target role, and skills. Optionally add your real projects for better content generation.',
+                },
+                {
+                  number: '2',
+                  title: 'AI Generates Content',
+                  description:
+                    'Our advanced AI powered by Groq creates professional summaries, project descriptions, and achievements tailored to your profile.',
+                },
+                {
+                  number: '3',
+                  title: 'Download PDF',
+                  description:
+                    'Preview your resume and download it as a high-quality, print-ready PDF. Share with employers or customize further.',
+                },
+              ]}
+            />
+
+            {/* ── Feature Grid ── */}
+            <FeatureGrid
+              title="Comprehensive Resume Features"
+              description="Everything you need for a professional resume"
+              features={[
+                {
+                  icon: '📝',
+                  title: 'Professional Summary',
+                  description:
+                    'AI-generated compelling 2-sentence summary highlighting your strengths and career goals. Tailored to your target role.',
+                },
+                {
+                  icon: '🎓',
+                  title: 'Education Section',
+                  description:
+                    'Clean display of your degree, institution, graduation year, and location. Properly formatted for ATS systems.',
+                },
+                {
+                  icon: '💻',
+                  title: 'Projects Showcase',
+                  description:
+                    'Detailed project descriptions with technologies used and bullet points highlighting your contributions and impact.',
+                },
+                {
+                  icon: '🔧',
+                  title: 'Technical Skills',
+                  description:
+                    'Comprehensive skills section with 200+ options covering languages, frameworks, databases, cloud, DevOps, and more.',
+                },
+                {
+                  icon: '🏆',
+                  title: 'Achievements',
+                  description:
+                    'AI-generated achievements that demonstrate your capabilities and value. Realistic and compelling.',
+                },
+                {
+                  icon: '🔗',
+                  title: 'Social Links',
+                  description:
+                    'Include LinkedIn, GitHub, LeetCode, and portfolio links. Clickable in PDF for easy access by recruiters.',
+                },
+                {
+                  icon: '📱',
+                  title: 'Contact Information',
+                  description:
+                    'Professional display of your name, email, phone, and location. Clear and easy to find.',
+                },
+                {
+                  icon: '🎨',
+                  title: 'Clean Design',
+                  description:
+                    'Modern, professional layout with blue accent colors, optimal spacing, and clear section hierarchy.',
+                },
+                {
+                  icon: '⬇️',
+                  title: 'PDF Export',
+                  description:
+                    'Download high-quality PDF with embedded fonts and links. Print-ready and email-friendly format.',
+                  badge: 'Popular',
+                },
+              ]}
+              columns={3}
+            />
+
+            {/* ── FAQ ── */}
+            <FAQSection
+              title="Frequently Asked Questions"
+              description="Everything you need to know about resume building"
+              faqs={[
+                {
+                  question: 'Is this really free? Are there hidden costs?',
+                  answer:
+                    'Yes, 100% free forever! No hidden costs, no subscriptions, no credit card required. Generate unlimited resumes for different roles completely free. We believe everyone deserves access to professional resume tools.',
+                },
+                {
+                  question: 'How does the AI generate content?',
+                  answer:
+                    'Our AI (powered by Groq Llama 3.3 70B) analyzes your information including education, skills, and target role. It then generates realistic professional summaries, project descriptions, and achievements based on industry standards and best practices.',
+                },
+                {
+                  question: 'Will the AI content sound generic?',
+                  answer:
+                    'No! The AI creates unique content for each user based on their specific information. If you provide real project details, the AI bases content on those. Otherwise, it creates realistic examples using your actual skills and target role.',
+                },
+                {
+                  question: 'Is my information safe and private?',
+                  answer:
+                    'Absolutely. Your information is encrypted and processed securely. We never store your data permanently or share it with third parties. You can generate your resume with complete privacy.',
+                },
+                {
+                  question: 'Can I customize the content after generation?',
+                  answer:
+                    'Currently, the resume is generated as a final PDF. However, you can generate multiple versions with different information and choose the best one. We recommend reviewing and editing the content in your own editor if needed.',
+                },
+                {
+                  question: 'What format is the resume in?',
+                  answer:
+                    'The resume is generated as a professional PDF with clean formatting, blue accent colors, and optimal spacing. It\'s ATS-friendly, print-ready, and includes clickable links for your social profiles.',
+                },
+                {
+                  question: 'Can I generate resumes for different roles?',
+                  answer:
+                    'Yes! You can generate unlimited resumes. We recommend creating role-specific versions by changing your target role and emphasizing different skills for each position you apply to.',
+                },
+                {
+                  question: 'How long does it take to generate?',
+                  answer:
+                    'The entire process takes about 2 minutes: 1 minute to fill in your information and 30-60 seconds for AI generation and PDF creation. Results are displayed instantly after processing.',
+                },
+              ]}
+            />
+
+            {/* ── CTA ── */}
+            <CTASection
+              badge="🚀 Ready to land your dream job?"
+              title="Create Your Professional Resume Now"
+              description="Join thousands of job seekers who have built impressive resumes with AI. No signup, no cost, no catch."
+              primaryAction={{
+                label: 'Start Building Free',
+                onClick: scrollToTop,
+              }}
+              features={[
+                '100% Free Forever',
+                'AI-Powered Content',
+                'Instant PDF Download',
+                'Privacy Guaranteed',
+              ]}
+            />
           </motion.div>
-        </form>
-          </>
         )}
-      </div>
+      </AnimatePresence>
     </AppShell>
   );
 }

@@ -92,7 +92,7 @@ export default function AboutPage() {
             <p className="text-gray-500 leading-relaxed">We built ResuPulse to expose exactly how ATS systems evaluate your resume, so you can make targeted improvements and stop being filtered out unfairly.</p>
           </FadeUp>
           <FadeUp delay={0.2}>
-            <div className="rounded-2xl p-8 border border-violet-100 bg-gradient-to-br from-violet-50 to-pink-50">
+            <div className="rounded-sm p-8 border border-violet-100 bg-gradient-to-br from-violet-50 to-pink-50">
               <div className="space-y-4">
                 {[{ pct: 75, label: 'Resumes rejected by ATS', color: '#dc2626' }, { pct: 63, label: 'Jobs never see qualified candidates', color: '#f59e0b' }, { pct: 94, label: 'ResuPulse users who improved', color: '#7c3aed' }].map(({ pct, label, color }) => (
                   <div key={label}>
@@ -122,7 +122,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {VALUES.map(({ icon, title, desc }, i) => (
               <FadeUp key={title} delay={i * 0.08}>
-                <div className="feature-card bg-white rounded-2xl p-6 border border-gray-100 flex gap-4 shadow-[0_4px_28px_rgba(0,0,0,0.07)]">
+                <div className="feature-card bg-white rounded-sm p-6 border border-gray-100 flex gap-4 shadow-[0_4px_28px_rgba(0,0,0,0.07)]">
                   <div className="text-3xl flex-shrink-0">{icon}</div>
                   <div>
                     <h3 className="text-base font-bold text-gray-900 mb-2">{title}</h3>
@@ -146,8 +146,8 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {TEAM.map(({ name, role, bio, emoji, color }, i) => (
               <FadeUp key={name} delay={i * 0.1}>
-                <div className="bg-white rounded-2xl p-6 border border-gray-100 text-center shadow-[0_4px_28px_rgba(0,0,0,0.07)]">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4" style={{ background: `${color}15` }}>{emoji}</div>
+                <div className="bg-white rounded-sm p-6 border border-gray-100 text-center shadow-[0_4px_28px_rgba(0,0,0,0.07)]">
+                  <div className="w-16 h-16 rounded-sm flex items-center justify-center text-3xl mx-auto mb-4" style={{ background: `${color}15` }}>{emoji}</div>
                   <h3 className="text-base font-bold text-gray-900">{name}</h3>
                   <p className="text-xs font-semibold uppercase tracking-wider mb-3 mt-1" style={{ color }}>{role}</p>
                   <p className="text-sm text-gray-500 leading-relaxed">{bio}</p>
@@ -198,7 +198,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {TECH_STACK.map(({ name, role, color }, i) => (
               <FadeUp key={name} delay={i * 0.06}>
-                <div className="bg-white rounded-xl p-4 border border-gray-100 flex items-center gap-4 shadow-[0_4px_28px_rgba(0,0,0,0.07)]">
+                <div className="bg-white rounded-sm p-4 border border-gray-100 flex items-center gap-4 shadow-[0_4px_28px_rgba(0,0,0,0.07)]">
                   <div className="w-3 h-10 rounded-full flex-shrink-0" style={{ background: color }} />
                   <div>
                     <div className="text-sm font-bold text-gray-900">{name}</div>
@@ -217,7 +217,7 @@ export default function AboutPage() {
           <FadeUp>
             <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Ready to improve your resume?</h2>
             <p className="text-white/70 mb-8 leading-relaxed">Try it free — no signup, no credit card needed.</p>
-            <Link href="/analyze" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-violet-700 bg-white hover:bg-gray-50 transition-all hover:scale-[1.02] text-[15px]">
+            <Link href="/analyze" className="inline-flex items-center gap-2 px-8 py-4 rounded-sm font-bold text-violet-700 bg-white hover:bg-gray-50 transition-all hover:scale-[1.02] text-[15px]">
               Analyze My Resume Free →
             </Link>
           </FadeUp>

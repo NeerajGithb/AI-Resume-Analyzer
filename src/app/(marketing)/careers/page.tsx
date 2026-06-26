@@ -128,7 +128,7 @@ export default function CareersPage() {
               { icon: '🌍', title: 'Remote First', desc: 'Work from anywhere' },
               { icon: '📈', title: 'Career Growth', desc: 'Clear path to advancement' }
             ].map((benefit, index) => (
-              <div key={index} className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div key={index} className="bg-white rounded-sm p-6 shadow-sm hover:shadow-md transition-shadow">
                 <div className="text-4xl mb-3">{benefit.icon}</div>
                 <h3 className="font-semibold text-gray-900 mb-1">{benefit.title}</h3>
                 <p className="text-sm text-gray-600">{benefit.desc}</p>
@@ -155,7 +155,7 @@ export default function CareersPage() {
             <div className="flex flex-wrap justify-center gap-3 mb-8">
               <button
                 onClick={() => setSelectedDepartment('')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`px-4 py-2 rounded-sm font-medium transition-colors ${
                   selectedDepartment === ''
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -167,7 +167,7 @@ export default function CareersPage() {
                 <button
                   key={dept}
                   onClick={() => setSelectedDepartment(dept)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-sm font-medium transition-colors ${
                     selectedDepartment === dept
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -186,7 +186,7 @@ export default function CareersPage() {
               <p className="mt-4 text-gray-600">Loading positions...</p>
             </div>
           ) : filteredJobs.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-lg">
+            <div className="text-center py-12 bg-gray-50 rounded-sm">
               <p className="text-gray-600 text-lg">
                 {jobs.length === 0 
                   ? "We're not hiring right now, but check back soon!" 
@@ -199,7 +199,7 @@ export default function CareersPage() {
                 <Link
                   key={job._id}
                   href={`/jobs/${job._id}`}
-                  className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
+                  className="block bg-white border border-gray-200 rounded-sm p-6 hover:shadow-lg transition-shadow"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -265,7 +265,7 @@ export default function CareersPage() {
                     </div>
 
                     <div className="ml-6 text-right">
-                      <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                      <button className="px-6 py-3 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors font-medium">
                         Apply Now
                       </button>
                       <p className="text-sm text-gray-500 mt-2">
@@ -291,7 +291,7 @@ export default function CareersPage() {
           </p>
           <a
             href="mailto:careers@yourcompany.com"
-            className="inline-block px-8 py-4 bg-white text-blue-600 rounded-lg hover:bg-gray-50 transition-colors font-medium text-lg"
+            className="inline-block px-8 py-4 bg-white text-blue-600 rounded-sm hover:bg-gray-50 transition-colors font-medium text-lg"
           >
             Send Your Resume
           </a>

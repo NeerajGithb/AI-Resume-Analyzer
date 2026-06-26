@@ -107,8 +107,8 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-5xl mx-auto px-6">
+    <div className="min-h-screen bg-gray-50">
+      <div className="px-6">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Account Settings</h1>
@@ -118,7 +118,7 @@ export default function SettingsPage() {
         {/* Message banner */}
         {message && (
           <div
-            className={`mb-6 p-4 rounded-xl border ${
+            className={`mb-6 p-4 rounded-sm border ${
               message.type === 'success'
                 ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
                 : 'bg-red-50 border-red-200 text-red-800'
@@ -134,12 +134,12 @@ export default function SettingsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar tabs */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl border border-gray-200 p-2 space-y-1">
+            <div className="bg-white rounded-sm border border-gray-200 p-2 space-y-1">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all ${
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-sm text-left transition-all ${
                     activeTab === tab.id
                       ? 'bg-violet-50 text-violet-700 font-semibold'
                       : 'text-gray-600 hover:bg-gray-50'
@@ -154,7 +154,7 @@ export default function SettingsPage() {
 
           {/* Content area */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-xl border border-gray-200 p-8">
+            <div className="bg-white rounded-sm border border-gray-200 p-8">
               {activeTab === 'profile' && (
                 <div>
                   <h2 className="text-xl font-bold text-gray-900 mb-6">Profile Information</h2>
@@ -165,7 +165,7 @@ export default function SettingsPage() {
                         type="text"
                         value={profile.name}
                         onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        className="w-full px-4 py-3 rounded-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
                         placeholder="Your full name"
                       />
                     </div>
@@ -175,7 +175,7 @@ export default function SettingsPage() {
                         type="email"
                         value={profile.email}
                         onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        className="w-full px-4 py-3 rounded-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
                         placeholder="your@email.com"
                       />
                     </div>
@@ -185,14 +185,14 @@ export default function SettingsPage() {
                         value={profile.bio}
                         onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                         rows={4}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none"
+                        className="w-full px-4 py-3 rounded-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none"
                         placeholder="Tell us about yourself..."
                       />
                     </div>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold hover:opacity-90 disabled:opacity-60 transition-all"
+                      className="px-6 py-3 rounded-sm bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold hover:opacity-90 disabled:opacity-60 transition-all"
                     >
                       {loading ? 'Saving...' : 'Save Changes'}
                     </button>
@@ -210,7 +210,7 @@ export default function SettingsPage() {
                         type="password"
                         value={security.currentPassword}
                         onChange={(e) => setSecurity({ ...security, currentPassword: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        className="w-full px-4 py-3 rounded-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
                         placeholder="Enter current password"
                       />
                     </div>
@@ -220,7 +220,7 @@ export default function SettingsPage() {
                         type="password"
                         value={security.newPassword}
                         onChange={(e) => setSecurity({ ...security, newPassword: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        className="w-full px-4 py-3 rounded-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
                         placeholder="Enter new password"
                       />
                     </div>
@@ -230,14 +230,14 @@ export default function SettingsPage() {
                         type="password"
                         value={security.confirmPassword}
                         onChange={(e) => setSecurity({ ...security, confirmPassword: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        className="w-full px-4 py-3 rounded-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
                         placeholder="Confirm new password"
                       />
                     </div>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold hover:opacity-90 disabled:opacity-60 transition-all"
+                      className="px-6 py-3 rounded-sm bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold hover:opacity-90 disabled:opacity-60 transition-all"
                     >
                       {loading ? 'Updating...' : 'Update Password'}
                     </button>
@@ -249,7 +249,7 @@ export default function SettingsPage() {
                 <div>
                   <h2 className="text-xl font-bold text-gray-900 mb-6">Email Preferences</h2>
                   <div className="space-y-5">
-                    <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200">
+                    <div className="flex items-center justify-between p-4 rounded-sm border border-gray-200">
                       <div>
                         <p className="font-semibold text-gray-900">Email Notifications</p>
                         <p className="text-sm text-gray-500">Receive updates about your analyses</p>
@@ -267,7 +267,7 @@ export default function SettingsPage() {
                       </label>
                     </div>
 
-                    <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200">
+                    <div className="flex items-center justify-between p-4 rounded-sm border border-gray-200">
                       <div>
                         <p className="font-semibold text-gray-900">Marketing Emails</p>
                         <p className="text-sm text-gray-500">Occasional product updates and offers</p>
@@ -283,7 +283,7 @@ export default function SettingsPage() {
                       </label>
                     </div>
 
-                    <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200">
+                    <div className="flex items-center justify-between p-4 rounded-sm border border-gray-200">
                       <div>
                         <p className="font-semibold text-gray-900">Weekly Resume Tips</p>
                         <p className="text-sm text-gray-500">Get expert advice in your inbox</p>
@@ -302,7 +302,7 @@ export default function SettingsPage() {
                     <button
                       onClick={handlePreferencesUpdate}
                       disabled={loading}
-                      className="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold hover:opacity-90 disabled:opacity-60 transition-all"
+                      className="px-6 py-3 rounded-sm bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold hover:opacity-90 disabled:opacity-60 transition-all"
                     >
                       {loading ? 'Saving...' : 'Save Preferences'}
                     </button>
@@ -315,9 +315,9 @@ export default function SettingsPage() {
                   <h2 className="text-xl font-bold text-gray-900 mb-6">Data & Privacy</h2>
                   <div className="space-y-6">
                     {/* Export data */}
-                    <div className="p-5 rounded-xl border border-gray-200">
+                    <div className="p-5 rounded-sm border border-gray-200">
                       <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-2xl flex-shrink-0">
+                        <div className="w-12 h-12 rounded-sm bg-blue-100 flex items-center justify-center text-2xl flex-shrink-0">
                           📦
                         </div>
                         <div className="flex-1">
@@ -329,7 +329,7 @@ export default function SettingsPage() {
                           <button
                             onClick={handleExportData}
                             disabled={loading}
-                            className="px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-60 transition-all"
+                            className="px-5 py-2.5 rounded-sm bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-60 transition-all"
                           >
                             {loading ? 'Exporting...' : 'Download Data'}
                           </button>
@@ -338,9 +338,9 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Delete account */}
-                    <div className="p-5 rounded-xl border border-red-200 bg-red-50">
+                    <div className="p-5 rounded-sm border border-red-200 bg-red-50">
                       <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center text-2xl flex-shrink-0">
+                        <div className="w-12 h-12 rounded-sm bg-red-100 flex items-center justify-center text-2xl flex-shrink-0">
                           ⚠️
                         </div>
                         <div className="flex-1">
@@ -351,7 +351,7 @@ export default function SettingsPage() {
                           <button
                             onClick={handleDeleteAccount}
                             disabled={loading}
-                            className="px-5 py-2.5 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 disabled:opacity-60 transition-all"
+                            className="px-5 py-2.5 rounded-sm bg-red-600 text-white text-sm font-semibold hover:bg-red-700 disabled:opacity-60 transition-all"
                           >
                             {loading ? 'Processing...' : 'Delete Account'}
                           </button>

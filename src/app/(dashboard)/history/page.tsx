@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { AppShell } from '@/components/layout/AppShell';
 import { SkeletonCard } from '@/components/ui/Skeleton';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -191,8 +190,8 @@ export default function HistoryPage() {
 
   return (
     <>
-      <AppShell>
-        <div className="space-y-6">
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
           {/* Filters and Search */}
           <div className="bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-4">
             <div className="flex flex-col sm:flex-row gap-4">
@@ -203,7 +202,7 @@ export default function HistoryPage() {
                   placeholder="Search by filename..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
+                  className="w-full px-4 py-2 rounded-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 text-sm"
                 />
               </div>
 
@@ -218,7 +217,7 @@ export default function HistoryPage() {
                   <button
                     key={value}
                     onClick={() => setScoreFilter(value as any)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-4 py-2 rounded-sm text-sm font-medium transition-all ${
                       scoreFilter === value
                         ? 'bg-violet-600 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -232,7 +231,7 @@ export default function HistoryPage() {
               {/* Export */}
               <button
                 onClick={handleExportCSV}
-                className="px-4 py-2 rounded-lg bg-white border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all"
+                className="px-4 py-2 rounded-sm bg-white border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-all"
               >
                 Export CSV
               </button>
@@ -241,13 +240,13 @@ export default function HistoryPage() {
 
           {/* Bulk actions */}
           {selectedItems.size > 0 && (
-            <div className="bg-violet-50 border border-violet-200 rounded-lg p-4 flex items-center justify-between">
+            <div className="bg-violet-50 border border-violet-200 rounded-sm p-4 flex items-center justify-between">
               <span className="text-sm font-medium text-violet-900">
                 {selectedItems.size} item{selectedItems.size > 1 ? 's' : ''} selected
               </span>
               <button
                 onClick={handleBulkDelete}
-                className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-all"
+                className="px-4 py-2 rounded-sm bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-all"
               >
                 Delete Selected
               </button>
@@ -357,7 +356,7 @@ export default function HistoryPage() {
             </div>
           )}
         </div>
-      </AppShell>
+      </div>
     </>
   );
 }

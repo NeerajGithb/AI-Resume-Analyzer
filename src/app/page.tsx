@@ -45,14 +45,14 @@ function AnimatedCounter({ target, suffix = '', duration = 2000 }: { target: num
 function HeroScoreCard() {
   return (
     <div className="relative w-[340px] flex-shrink-0">
-      <div className="absolute inset-0 blur-3xl opacity-30 rounded-3xl" style={{ background: 'linear-gradient(135deg,#7c3aed,#ec4899)' }} />
-      <div className="relative rounded-2xl p-6 z-10 glass">
+      <div className="absolute inset-0 blur-3xl opacity-30 rounded-sm" style={{ background: 'linear-gradient(135deg,#7c3aed,#ec4899)' }} />
+      <div className="relative rounded-sm p-6 z-10 glass">
         <div className="flex items-center justify-between mb-5">
           <div>
             <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-0.5">ATS Analysis</p>
             <p className="text-sm font-semibold text-white leading-snug">Software Engineer Resume</p>
           </div>
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-emerald-500/20">
+          <div className="w-8 h-8 rounded-sm flex items-center justify-center bg-emerald-500/20">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
           </div>
         </div>
@@ -94,7 +94,7 @@ function HeroScoreCard() {
           </div>
         </div>
       </div>
-      <motion.div className="absolute -bottom-10 -right-8 glass rounded-xl p-3 z-20 border border-white/10"
+      <motion.div className="absolute -bottom-10 -right-8 glass rounded-sm p-3 z-20 border border-white/10"
         animate={{ y: [0, -8, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}>
         <div className="flex items-start gap-2">
           <div className="w-6 h-6 rounded-full bg-violet-500/30 flex items-center justify-center shrink-0 mt-0.5">
@@ -137,12 +137,12 @@ function HeroSection() {
           </motion.p>
           <motion.div className="flex flex-col sm:flex-row gap-4 mb-12"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}>
-            <Link href="/analyze" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-white text-[15px] shadow-lg transition-all hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]"
+            <Link href="/analyze" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-sm font-bold text-white text-[15px] shadow-lg transition-all hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]"
               style={{ background: 'linear-gradient(135deg,#7c3aed 0%,#ec4899 100%)', boxShadow: '0 8px 32px rgba(124,58,237,0.4)' }}>
               Analyze My Resume Free
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
             </Link>
-            <a href="#how-it-works" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold text-white border border-white/20 hover:bg-white/10 transition-all text-[15px]">
+            <a href="#how-it-works" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-sm font-semibold text-white border border-white/20 hover:bg-white/10 transition-all text-[15px]">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" /></svg>
               See How It Works
             </a>
@@ -229,8 +229,8 @@ function FeaturesSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map(({ icon, title, desc, bg, color }, i) => (
             <FadeUp key={title} delay={i * 0.07}>
-              <div className="feature-card bg-white rounded-2xl p-6 border border-gray-100 h-full shadow-[0_4px_28px_rgba(0,0,0,0.07)]">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4" style={{ background: bg }}>{icon}</div>
+              <div className="feature-card bg-white rounded-sm p-6 border border-gray-100 h-full shadow-[0_4px_28px_rgba(0,0,0,0.07)]">
+                <div className="w-12 h-12 rounded-sm flex items-center justify-center text-2xl mb-4" style={{ background: bg }}>{icon}</div>
                 <h3 className="text-base font-bold text-gray-900 mb-2">{title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
               </div>
@@ -264,7 +264,7 @@ function HowItWorksSection() {
             <FadeUp key={title} delay={i * 0.15}>
               <div className="relative text-center">
                 <div className="relative inline-block mb-6">
-                  <div className="w-[108px] h-[108px] rounded-2xl flex items-center justify-center mx-auto text-5xl" style={{ background: 'linear-gradient(135deg,#7c3aed,#9333ea)', boxShadow: '0 8px 32px rgba(124,58,237,0.3)' }}>{emoji}</div>
+                  <div className="w-[108px] h-[108px] rounded-sm flex items-center justify-center mx-auto text-5xl" style={{ background: 'linear-gradient(135deg,#7c3aed,#9333ea)', boxShadow: '0 8px 32px rgba(124,58,237,0.3)' }}>{emoji}</div>
                   <div className="absolute -top-2 -right-2 w-7 h-7 rounded-full flex items-center justify-center text-xs font-black text-white" style={{ background: 'linear-gradient(135deg,#ec4899,#f43f5e)' }}>{i + 1}</div>
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">{title}</h3>
@@ -274,7 +274,7 @@ function HowItWorksSection() {
           ))}
         </div>
         <FadeUp delay={0.4} className="text-center mt-14">
-          <Link href="/analyze" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-white text-[15px] transition-all hover:opacity-90 hover:scale-[1.02]"
+          <Link href="/analyze" className="inline-flex items-center gap-2 px-8 py-4 rounded-sm font-bold text-white text-[15px] transition-all hover:opacity-90 hover:scale-[1.02]"
             style={{ background: 'linear-gradient(135deg,#7c3aed 0%,#ec4899 100%)', boxShadow: '0 8px 32px rgba(124,58,237,0.35)' }}>
             Try It Free — No Signup
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
@@ -296,13 +296,13 @@ function ResultsPreviewSection() {
           <p className="text-lg text-gray-400 leading-relaxed">Every analysis includes a full report with actionable insights you can apply immediately.</p>
         </FadeUp>
         <ScaleIn>
-          <div className="glass rounded-3xl p-6 md:p-8 max-w-4xl mx-auto border border-white/10">
+          <div className="glass rounded-sm p-6 md:p-8 max-w-4xl mx-auto border border-white/10">
             <div className="flex items-center gap-2 mb-6">
               <div className="w-3 h-3 rounded-full bg-red-400/60" /><div className="w-3 h-3 rounded-full bg-amber-400/60" /><div className="w-3 h-3 rounded-full bg-emerald-400/60" />
-              <div className="flex-1 mx-4 h-7 rounded-lg bg-white/8 flex items-center px-3"><span className="text-[11px] text-gray-500">ResuPulse.app/analysis</span></div>
+              <div className="flex-1 mx-4 h-7 rounded-sm bg-white/8 flex items-center px-3"><span className="text-[11px] text-gray-500">ResuPulse.app/analysis</span></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="glass rounded-2xl p-5 text-center border border-white/8">
+              <div className="glass rounded-sm p-5 text-center border border-white/8">
                 <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-3">ATS Score</p>
                 <div className="relative w-24 h-24 mx-auto mb-3">
                   <svg width="96" height="96" viewBox="0 0 96 96">
@@ -317,7 +317,7 @@ function ResultsPreviewSection() {
                 </div>
                 <div className="text-xs text-emerald-400 font-medium">✓ ATS Ready</div>
               </div>
-              <div className="glass rounded-2xl p-5 border border-white/8">
+              <div className="glass rounded-sm p-5 border border-white/8">
                 <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Keywords Found</p>
                 <div className="flex flex-wrap gap-1.5">
                   {['React', 'TypeScript', 'Node.js', 'REST APIs', 'Git', 'Agile'].map(kw => (
@@ -331,14 +331,14 @@ function ResultsPreviewSection() {
                   ))}
                 </div>
               </div>
-              <div className="glass rounded-2xl p-5 border border-white/8">
+              <div className="glass rounded-sm p-5 border border-white/8">
                 <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-3">AI Suggestion</p>
                 <div className="space-y-2">
-                  <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/15">
+                  <div className="p-2 rounded-sm bg-red-500/10 border border-red-500/15">
                     <p className="text-[10px] text-red-400 font-medium mb-1">BEFORE</p>
                     <p className="text-[11px] text-gray-400 leading-snug">"Helped with React projects and fixed bugs"</p>
                   </div>
-                  <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/15">
+                  <div className="p-2 rounded-sm bg-emerald-500/10 border border-emerald-500/15">
                     <p className="text-[10px] text-emerald-400 font-medium mb-1">AFTER</p>
                     <p className="text-[11px] text-gray-300 leading-snug">"Led development of 3 React apps, reducing bug rate by 40%"</p>
                   </div>
@@ -380,7 +380,7 @@ function ComparisonSection() {
           <p className="text-gray-500">See why thousands of job seekers choose ResuPulse over manual review or paid tools.</p>
         </FadeUp>
         <FadeUp delay={0.1}>
-          <div className="overflow-hidden rounded-2xl border border-gray-100 shadow-[0_4px_28px_rgba(0,0,0,0.07)] bg-white">
+          <div className="overflow-hidden rounded-sm border border-gray-100 shadow-[0_4px_28px_rgba(0,0,0,0.07)] bg-white">
             <div className="grid grid-cols-4 bg-gray-50 border-b border-gray-100 py-4 px-6">
               <div className="text-sm font-semibold text-gray-500">Feature</div>
               <div className="text-sm font-bold text-violet-700 text-center">ResuPulse ✨</div>
@@ -421,12 +421,12 @@ function TestimonialsSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {TESTIMONIALS.map(({ quote, name, role, company, score, initials, color }, i) => (
             <FadeUp key={name} delay={i * 0.1}>
-              <div className="bg-white rounded-2xl p-6 border border-gray-100 h-full flex flex-col shadow-[0_4px_28px_rgba(0,0,0,0.07)]">
+              <div className="bg-white rounded-sm p-6 border border-gray-100 h-full flex flex-col shadow-[0_4px_28px_rgba(0,0,0,0.07)]">
                 <div className="flex gap-0.5 mb-4">
                   {[...Array(5)].map((_, j) => <svg key={j} width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" /></svg>)}
                 </div>
                 <p className="text-sm text-gray-600 leading-relaxed flex-1 mb-5">"{quote}"</p>
-                <div className="flex items-center gap-2 mb-5 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                <div className="flex items-center gap-2 mb-5 p-3 rounded-sm bg-gray-50 border border-gray-100">
                   <span className="font-semibold text-red-400 text-xs">{score.before}</span>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
                   <span className="font-bold text-emerald-600 text-sm">{score.after}</span>
@@ -463,21 +463,21 @@ function PricingSection() {
         </FadeUp>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
           <FadeUp delay={0.1}>
-            <div className="border border-gray-200 rounded-2xl p-8 h-full bg-white shadow-[0_4px_28px_rgba(0,0,0,0.07)]">
+            <div className="border border-gray-200 rounded-sm p-8 h-full bg-white shadow-[0_4px_28px_rgba(0,0,0,0.07)]">
               <h3 className="text-lg font-bold text-gray-900 mb-1">Free</h3>
               <div className="flex items-baseline gap-1 mb-2"><span className="text-4xl font-extrabold text-gray-900">$0</span><span className="text-gray-400 text-sm">/ forever</span></div>
               <p className="text-sm text-gray-500 mb-6">Everything you need to get started.</p>
-              <Link href="/analyze" className="block text-center py-3 px-6 rounded-xl font-semibold text-violet-700 border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors mb-6">Get Started Free</Link>
+              <Link href="/analyze" className="block text-center py-3 px-6 rounded-sm font-semibold text-violet-700 border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors mb-6">Get Started Free</Link>
               <ul className="space-y-3">{FREE.map(f => <li key={f} className="flex items-start gap-2.5 text-sm text-gray-600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0 mt-0.5 text-emerald-500"><polyline points="20 6 9 17 4 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" /></svg>{f}</li>)}</ul>
             </div>
           </FadeUp>
           <FadeUp delay={0.2}>
-            <div className="rounded-2xl p-8 h-full relative overflow-hidden text-white" style={{ background: 'linear-gradient(145deg,#4c1d95 0%,#7c3aed 50%,#9333ea 100%)', boxShadow: '0 20px 60px rgba(124,58,237,0.4)' }}>
+            <div className="rounded-sm p-8 h-full relative overflow-hidden text-white" style={{ background: 'linear-gradient(145deg,#4c1d95 0%,#7c3aed 50%,#9333ea 100%)', boxShadow: '0 20px 60px rgba(124,58,237,0.4)' }}>
               <div className="absolute top-5 right-5"><span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/20 text-white">Coming Soon</span></div>
               <h3 className="text-lg font-bold mb-1">Pro</h3>
               <div className="flex items-baseline gap-1 mb-2"><span className="text-4xl font-extrabold">$9</span><span className="text-white/60 text-sm">/ month</span></div>
               <p className="text-sm text-white/70 mb-6">For serious job seekers.</p>
-              <button disabled className="w-full py-3 px-6 rounded-xl font-semibold text-violet-700 bg-white opacity-70 mb-6 cursor-not-allowed">Notify Me When Available</button>
+              <button disabled className="w-full py-3 px-6 rounded-sm font-semibold text-violet-700 bg-white opacity-70 mb-6 cursor-not-allowed">Notify Me When Available</button>
               <ul className="space-y-3">{PRO.map(f => <li key={f} className="flex items-start gap-2.5 text-sm text-white/90"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0 mt-0.5 text-purple-200"><polyline points="20 6 9 17 4 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" /></svg>{f}</li>)}</ul>
             </div>
           </FadeUp>
@@ -500,7 +500,7 @@ function CtaBannerSection() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-purple-400/25 bg-purple-500/10 text-purple-300 text-sm font-medium mb-8">🚀 Ready to land your dream job?</div>
           <h2 className="text-4xl md:text-6xl font-extrabold text-white leading-[1.1] mb-6 tracking-tight">Your perfect resume is{' '}<span className="gradient-text">30 seconds away</span></h2>
           <p className="text-lg text-gray-400 leading-relaxed mb-10 max-w-2xl mx-auto">Join 50,000+ professionals who have already improved their resumes and landed more interviews. No signup, no credit card, no catch.</p>
-          <Link href="/analyze" className="inline-flex items-center justify-center gap-2 px-10 py-4 rounded-xl font-bold text-white text-lg transition-all hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]"
+          <Link href="/analyze" className="inline-flex items-center justify-center gap-2 px-10 py-4 rounded-sm font-bold text-white text-lg transition-all hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]"
             style={{ background: 'linear-gradient(135deg,#7c3aed 0%,#ec4899 100%)', boxShadow: '0 8px 40px rgba(124,58,237,0.5)' }}>
             Analyze My Resume — Free
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>

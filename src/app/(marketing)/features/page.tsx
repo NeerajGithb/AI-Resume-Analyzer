@@ -270,7 +270,7 @@ export default function FeaturesPage() {
 
                   <Link
                     href={link}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white transition-all hover:opacity-90"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-sm font-bold text-white transition-all hover:opacity-90"
                     style={{ background: `linear-gradient(135deg, ${color}, ${color}dd)` }}
                   >
                     Try {title} Free →
@@ -279,12 +279,12 @@ export default function FeaturesPage() {
 
                 {/* Visual */}
                 <div className={i % 2 === 1 ? 'lg:order-1' : ''}>
-                  <div className="glass rounded-2xl p-8 border border-gray-200 shadow-[0_8px_40px_rgba(0,0,0,0.12)]" style={{ background: 'linear-gradient(145deg, rgba(255,255,255,0.9), rgba(249,250,251,0.9))' }}>
-                    <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-5xl mb-6 mx-auto" style={{ background: `${color}15` }}>
+                  <div className="glass rounded-sm p-8 border border-gray-200 shadow-[0_8px_40px_rgba(0,0,0,0.12)]" style={{ background: 'linear-gradient(145deg, rgba(255,255,255,0.9), rgba(249,250,251,0.9))' }}>
+                    <div className="w-20 h-20 rounded-sm flex items-center justify-center text-5xl mb-6 mx-auto" style={{ background: `${color}15` }}>
                       {icon}
                     </div>
                     <div className="text-center">
-                      <div className="inline-block px-4 py-2 rounded-lg text-sm font-semibold mb-4" style={{ background: `${color}10`, color }}>
+                      <div className="inline-block px-4 py-2 rounded-sm text-sm font-semibold mb-4" style={{ background: `${color}10`, color }}>
                         Live Demo Available
                       </div>
                       <p className="text-xs text-gray-500">Click "Try Free" to see this feature in action</p>
@@ -311,7 +311,7 @@ export default function FeaturesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {INTEGRATIONS.map(({ name, desc, available, tag }, i) => (
               <FadeUp key={name} delay={i * 0.08}>
-                <div className={`rounded-xl p-5 border ${available ? 'bg-white border-gray-100' : 'bg-gray-50 border-gray-200'} shadow-[0_4px_28px_rgba(0,0,0,0.07)]`}>
+                <div className={`rounded-sm p-5 border ${available ? 'bg-white border-gray-100' : 'bg-gray-50 border-gray-200'} shadow-[0_4px_28px_rgba(0,0,0,0.07)]`}>
                   <div className="flex items-start justify-between mb-3">
                     <h3 className="text-sm font-bold text-gray-900">{name}</h3>
                     {tag && (
@@ -328,7 +328,7 @@ export default function FeaturesPage() {
 
           <FadeUp delay={0.3} className="text-center mt-10">
             <p className="text-sm text-gray-400 mb-4">Need a custom integration or enterprise plan?</p>
-            <Link href="/contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-violet-700 border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors">
+            <Link href="/contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-sm font-semibold text-violet-700 border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors">
               Contact Us →
             </Link>
           </FadeUp>
@@ -345,7 +345,7 @@ export default function FeaturesPage() {
             </p>
             <Link
               href="/analyze"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-white text-[15px] transition-all hover:opacity-90 hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-sm font-bold text-white text-[15px] transition-all hover:opacity-90 hover:scale-[1.02]"
               style={{ background: 'linear-gradient(135deg, #7c3aed, #ec4899)', boxShadow: '0 8px 32px rgba(124,58,237,0.4)' }}
             >
               Analyze My Resume Free →

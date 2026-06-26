@@ -67,7 +67,7 @@ export default function JobsPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div className="bg-white rounded-sm shadow-sm p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -76,7 +76,7 @@ export default function JobsPage() {
               <select
                 value={filters.department}
                 onChange={(e) => setFilters({ ...filters, department: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All Departments</option>
                 <option value="Engineering">Engineering</option>
@@ -94,7 +94,7 @@ export default function JobsPage() {
               <select
                 value={filters.type}
                 onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All Types</option>
                 <option value="Full-time">Full-time</option>
@@ -113,7 +113,7 @@ export default function JobsPage() {
                 value={filters.location}
                 onChange={(e) => setFilters({ ...filters, location: e.target.value })}
                 placeholder="Search location..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -126,7 +126,7 @@ export default function JobsPage() {
             <p className="mt-4 text-gray-600">Loading jobs...</p>
           </div>
         ) : jobs.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+          <div className="text-center py-12 bg-white rounded-sm shadow-sm">
             <p className="text-gray-600">No jobs found matching your criteria.</p>
           </div>
         ) : (
@@ -135,7 +135,7 @@ export default function JobsPage() {
               <Link
                 key={job._id}
                 href={`/jobs/${job._id}`}
-                className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6"
+                className="block bg-white rounded-sm shadow-sm hover:shadow-md transition-shadow p-6"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -198,7 +198,7 @@ export default function JobsPage() {
                   </div>
 
                   <div className="ml-6">
-                    <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    <button className="px-6 py-3 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors font-medium">
                       Apply Now
                     </button>
                   </div>

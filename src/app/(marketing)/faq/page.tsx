@@ -93,7 +93,7 @@ const FAQ_ITEMS = [
 function AccordionItem({ question, answer }: { question: string; answer: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="faq-item border-b border-gray-100 last:border-0 rounded-lg overflow-hidden">
+    <div className="faq-item border-b border-gray-100 last:border-0 rounded-sm overflow-hidden">
       <button
         className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
         onClick={() => setOpen((o) => !o)}
@@ -170,7 +170,7 @@ export default function FaqPage() {
                     {questions.length}
                   </span>
                 </div>
-                <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: 'var(--shadow-card)' }}>
+                <div className="bg-white rounded-sm border border-gray-100 overflow-hidden" style={{ boxShadow: 'var(--shadow-card)' }}>
                   {questions.map(({ q, a }) => (
                     <AccordionItem key={q} question={q} answer={a} />
                   ))}
@@ -196,7 +196,7 @@ export default function FaqPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="mailto:support@resupulse.app"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-violet-700 border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-sm font-semibold text-violet-700 border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
@@ -206,7 +206,7 @@ export default function FaqPage() {
               </a>
               <Link
                 href="/analyze"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-white transition-all hover:opacity-90"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-sm font-bold text-white transition-all hover:opacity-90"
                 style={{ background: 'linear-gradient(135deg, #7c3aed, #ec4899)' }}
               >
                 Try ResuPulse Free →

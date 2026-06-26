@@ -94,7 +94,7 @@ export default function PricingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Free */}
             <FadeUp delay={0.1}>
-              <div className="bg-white rounded-2xl p-8 border border-gray-200 h-full flex flex-col" style={{ boxShadow: 'var(--shadow-card)' }}>
+              <div className="bg-white rounded-sm p-8 border border-gray-200 h-full flex flex-col" style={{ boxShadow: 'var(--shadow-card)' }}>
                 <div className="mb-8">
                   <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Free Plan</span>
                   <div className="flex items-baseline gap-1 mt-2 mb-2">
@@ -104,7 +104,7 @@ export default function PricingPage() {
                   <p className="text-sm text-gray-500">No credit card. No signup. Start instantly.</p>
                 </div>
 
-                <Link href="/analyze" className="block text-center py-3.5 px-6 rounded-xl font-semibold text-violet-700 border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors mb-8">
+                <Link href="/analyze" className="block text-center py-3.5 px-6 rounded-sm font-semibold text-violet-700 border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors mb-8">
                   Get Started Free →
                 </Link>
 
@@ -121,7 +121,7 @@ export default function PricingPage() {
 
             {/* Pro */}
             <FadeUp delay={0.2}>
-              <div className="rounded-2xl p-8 h-full flex flex-col relative overflow-hidden text-white"
+              <div className="rounded-sm p-8 h-full flex flex-col relative overflow-hidden text-white"
                 style={{ background: 'linear-gradient(145deg, #4c1d95, #7c3aed 55%, #9333ea 100%)', boxShadow: '0 24px 60px rgba(124,58,237,0.4)' }}>
                 <div className="absolute top-5 right-5">
                   <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white border border-white/20">Coming Soon</span>
@@ -136,7 +136,7 @@ export default function PricingPage() {
                   <p className="text-sm text-white/60">For serious job seekers who want every edge.</p>
                 </div>
 
-                <button disabled className="block w-full text-center py-3.5 px-6 rounded-xl font-semibold text-violet-700 bg-white opacity-60 mb-8 cursor-not-allowed">
+                <button disabled className="block w-full text-center py-3.5 px-6 rounded-sm font-semibold text-violet-700 bg-white opacity-60 mb-8 cursor-not-allowed">
                   Notify Me When Available
                 </button>
 
@@ -174,7 +174,7 @@ export default function PricingPage() {
           </FadeUp>
 
           <FadeUp delay={0.15}>
-            <div className="border border-gray-100 rounded-2xl overflow-hidden" style={{ boxShadow: 'var(--shadow-card)' }}>
+            <div className="border border-gray-100 rounded-sm overflow-hidden" style={{ boxShadow: 'var(--shadow-card)' }}>
               {/* Header */}
               <div className="grid grid-cols-3 bg-gray-50 border-b border-gray-100 py-4 px-6">
                 <div className="text-sm font-semibold text-gray-500">Feature</div>
@@ -222,7 +222,7 @@ export default function PricingPage() {
             <p className="text-gray-500 mb-8">The Free plan is powerful. No signup needed — get results in 30 seconds.</p>
             <Link
               href="/analyze"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-white text-[15px] transition-all hover:opacity-90 hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-sm font-bold text-white text-[15px] transition-all hover:opacity-90 hover:scale-[1.02]"
               style={{ background: 'linear-gradient(135deg, #7c3aed, #ec4899)', boxShadow: '0 8px 32px rgba(124,58,237,0.4)' }}
             >
               Analyze My Resume Free →

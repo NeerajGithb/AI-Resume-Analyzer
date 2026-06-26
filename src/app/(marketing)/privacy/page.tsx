@@ -51,7 +51,7 @@ export default function PrivacyPage() {
         <div className="max-w-3xl mx-auto px-6">
           <FadeUp>
             <div className="prose prose-gray max-w-none">
-              <div className="p-5 rounded-xl bg-emerald-50 border border-emerald-200 mb-10">
+              <div className="p-5 rounded-sm bg-emerald-50 border border-emerald-200 mb-10">
                 <p className="text-sm text-emerald-800 leading-relaxed m-0">
                   <strong>TL;DR:</strong> We analyze your resume to give you a score and suggestions. Your resume content is processed by our AI provider (Groq) but is never stored by us or sold to third parties. Your analysis results are stored locally in your browser. We use essential cookies for functionality. No tracking pixels or ad networks.
                 </p>
@@ -218,12 +218,12 @@ export default function PrivacyPage() {
           </FadeUp>
 
           {/* CTA */}
-          <FadeUp delay={0.2} className="mt-12 p-6 rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-pink-50 text-center">
+          <FadeUp delay={0.2} className="mt-12 p-6 rounded-sm border border-violet-100 bg-gradient-to-br from-violet-50 to-pink-50 text-center">
             <h3 className="text-xl font-bold text-gray-900 mb-3">Ready to analyze your resume?</h3>
             <p className="text-sm text-gray-600 mb-5">We process your data securely and never sell it.</p>
             <Link
               href="/analyze"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white transition-all hover:opacity-90"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-sm font-bold text-white transition-all hover:opacity-90"
               style={{ background: 'linear-gradient(135deg, #7c3aed, #ec4899)' }}
             >
               Analyze My Resume Free →

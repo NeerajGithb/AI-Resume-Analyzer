@@ -67,7 +67,7 @@ export function Footer() {
           {/* Brand — 2 cols */}
           <div className="lg:col-span-2 space-y-6">
             <Link href="/" className="flex items-center gap-3 w-fit group">
-              <Image src="/logo.png" alt="ResuPulse Logo" width={44} height={44} className="rounded-lg" />
+              <Image src="/logo.png" alt="ResuPulse Logo" width={44} height={44} className="rounded-sm" />
               <div>
                 <p className="text-[15px] font-bold text-white leading-none">ResuPulse</p>
                 <p className="text-[10px] text-gray-500 mt-1 leading-none">AI-Powered Resume Analyzer</p>
@@ -101,11 +101,11 @@ export function Footer() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your@email.com"
-                    className="flex-1 min-w-0 px-3 py-2.5 rounded-lg bg-gray-800/80 border border-gray-700 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500 transition-colors"
+                    className="flex-1 min-w-0 px-3 py-2.5 rounded-sm bg-gray-800/80 border border-gray-700 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500 transition-colors"
                   />
                   <button
                     type="submit"
-                    className="px-4 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors shrink-0"
+                    className="px-4 py-2.5 rounded-sm bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors shrink-0"
                   >
                     Join
                   </button>
@@ -121,7 +121,7 @@ export function Footer() {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="w-9 h-9 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-500 hover:text-white transition-all"
+                  className="w-9 h-9 rounded-sm bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-500 hover:text-white transition-all"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
                     <path d={icon} />

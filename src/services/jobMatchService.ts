@@ -1,88 +1,84 @@
-import { http, ApiError } from '@/lib/httpClient';
-import { JobMatchResult, JobMatchStage, SSEEvent } from '@/types';
+import axiosInstance, { ApiError } from '@/lib/api/baseService';
+import { ProgressHelper } from '@/lib/api/progressHelper';
+import { JobMatchResult, JobMatchStage } from '@/types';
 
 export type OnStage = (stage: JobMatchStage, progress: number) => void;
 
-const STAGE_ORDER: JobMatchStage[] = ['uploading', 'parsing', 'matching', 'finalizing'];
+// Stages shown to user
+const JOB_MATCH_STAGES: JobMatchStage[] = [
+  'uploading',
+  'parsing',
+  'matching',
+  'finalizing',
+];
 
-function stageProgress(stage: JobMatchStage): number {
-  const idx = STAGE_ORDER.indexOf(stage);
-  return idx === -1 ? 0 : Math.round(((idx + 1) / STAGE_ORDER.length) * 100);
-}
+// Per-stage durations in ms
+const STAGE_DURATIONS = [
+  800,   // uploading
+  1500,  // parsing
+  2500,  // matching (longest - AI comparison)
+  600,   // finalizing
+];
 
 /**
- * Matches resume to job description via SSE streaming.
+ * Matches resume to job description with realistic progress animation.
  */
 export async function matchResumeToJob(
   resume: File,
   jobDescription: string,
   signal: AbortSignal,
   onStage: OnStage,
-): Promise<JobMatchResult> {
-  const formData = new FormData();
-  formData.append('resume', resume);
-  formData.append('jobDescription', jobDescription);
+): Promise<JobMatchResult & { id: string }> {
+  
+  const progress = new ProgressHelper<JobMatchStage>(onStage, signal);
 
-  const response = await http.stream('/match', formData, signal);
+  return await progress.run(
+    JOB_MATCH_STAGES,
+    async () => {
+      const formData = new FormData();
+      formData.append('resume', resume);
+      formData.append('jobDescription', jobDescription);
 
-  if (!response.ok) {
-    const requestId = response.headers.get('x-request-id') ?? undefined;
-    let message = 'Job match failed';
-    try {
-      const body = (await response.json()) as { message?: string };
-      message = body.message ?? message;
-    } catch { /* ignore */ }
-    throw new ApiError(response.status, message, requestId);
-  }
+      console.log('[JobMatchService] Calling API...');
+      const response = await axiosInstance.post<{ 
+        success: boolean; 
+        data: JobMatchResult & { id: string } 
+      }>(
+        '/match',
+        formData,
+        {
+          signal,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
 
-  if (!response.body) {
-    throw new ApiError(response.status || 500, 'Server returned no response body');
-  }
+      console.log('[JobMatchService] Response:', {
+        status: response.status,
+        hasData: !!response.data,
+        hasSuccess: response.data?.success,
+        hasId: !!(response.data?.data as any)?.id,
+      });
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let completed = false;
+      if (!response.data?.success) throw new Error('API returned success: false');
+      if (!response.data?.data) throw new Error('API response missing data field');
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+      return response.data.data;
+    },
+    STAGE_DURATIONS
+  );
+}
 
-    buffer += decoder.decode(value, { stream: true });
-    const parts = buffer.split('\n\n');
-    buffer = parts.pop() ?? '';
+export async function getJobMatchById(id: string): Promise<JobMatchResult & { id: string }> {
+  const response = await axiosInstance.get<{
+    success: boolean;
+    data: JobMatchResult & { id: string };
+  }>(`/match/${id}`);
 
-    for (const part of parts) {
-      const line = part.trim();
-      if (line.startsWith(':')) continue;
-      if (!line.startsWith('data:')) continue;
+  if (!response.data?.success) throw new Error('API returned success: false');
+  if (!response.data?.data) throw new Error('API response missing data field');
 
-      const json = line.slice('data:'.length).trim();
-      if (!json) continue;
-
-      let event: SSEEvent;
-      try {
-        event = JSON.parse(json) as SSEEvent;
-      } catch {
-        continue;
-      }
-
-      if (event.status === 'analyzing') {
-        const stage = event.stage as JobMatchStage;
-        onStage(stage, stageProgress(stage));
-      } else if (event.status === 'complete') {
-        completed = true;
-        return event.data as unknown as JobMatchResult;
-      } else if (event.status === 'error') {
-        throw new ApiError(502, event.message ?? 'Job match failed on server');
-      }
-    }
-  }
-
-  if (!completed) {
-    throw new ApiError(502, 'Connection closed before match completed. Please try again.');
-  }
-
-  throw new ApiError(500, 'Unexpected end of stream');
+  return response.data.data;
 }
 

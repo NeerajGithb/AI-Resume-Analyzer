@@ -1,5 +1,4 @@
-import { http, ApiError } from '@/lib/httpClient';
-import { API_BASE_URL } from '@/lib/constants';
+import axiosInstance, { ApiError } from '@/lib/api/baseService';
 import type {
   PreCheckResult,
   ApplicationSubmitData,
@@ -17,49 +16,24 @@ export async function preCheckResume(
   formData.append('resume', file);
   formData.append('jobId', jobId);
 
-  // Get token from localStorage if available
-  let token: string | null = null;
-  if (typeof window !== 'undefined') {
-    try {
-      const authStorage = localStorage.getItem('auth-storage');
-      if (authStorage) {
-        const parsed = JSON.parse(authStorage);
-        token = parsed?.state?.token || null;
-      }
-    } catch {
-      // Ignore errors
+  const response = await axiosInstance.post<{ success: boolean; data: PreCheckResult }>(
+    '/applications/pre-check',
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     }
-  }
+  );
 
-  const headers: Record<string, string> = {};
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  const res = await fetch(`${API_BASE_URL}/applications/pre-check`, {
-    method: 'POST',
-    body: formData,
-    headers,
-  });
-
-  if (!res.ok) {
-    const requestId = res.headers.get('x-request-id') ?? undefined;
-    try {
-      const body = (await res.json()) as { message?: string };
-      throw new ApiError(res.status, body.message ?? res.statusText, requestId);
-    } catch (err) {
-      if (err instanceof ApiError) throw err;
-      throw new ApiError(res.status, res.statusText, requestId);
-    }
-  }
-
-  return res.json() as Promise<{ success: boolean; data: PreCheckResult }>;
+  return response.data;
 }
 
 export async function submitApplication(
   data: ApplicationSubmitData
 ): Promise<ApplicationSubmitResponse> {
-  return http.postJson<ApplicationSubmitResponse>('/applications/submit', data);
+  const response = await axiosInstance.post<ApplicationSubmitResponse>('/applications/submit', data);
+  return response.data;
 }
 
 export async function getApplicationsByJob(
@@ -72,24 +46,17 @@ export async function getApplicationsByJob(
     limit?: number;
   }
 ): Promise<ApplicationsResponse> {
-  const params = new URLSearchParams();
-  
-  if (filters?.status) params.append('status', filters.status);
-  if (filters?.minScore) params.append('minScore', filters.minScore.toString());
-  if (filters?.maxScore) params.append('maxScore', filters.maxScore.toString());
-  if (filters?.page) params.append('page', filters.page.toString());
-  if (filters?.limit) params.append('limit', filters.limit.toString());
-
-  const query = params.toString();
-  const url = `/applications/job/${jobId}${query ? `?${query}` : ''}`;
-  
-  return http.get<ApplicationsResponse>(url);
+  const response = await axiosInstance.get<ApplicationsResponse>(`/applications/job/${jobId}`, {
+    params: filters
+  });
+  return response.data;
 }
 
 export async function getApplicationById(
   id: string
 ): Promise<{ success: boolean; data: Application }> {
-  return http.get<{ success: boolean; data: Application }>(`/applications/${id}`);
+  const response = await axiosInstance.get<{ success: boolean; data: Application }>(`/applications/${id}`);
+  return response.data;
 }
 
 export async function updateApplicationStatus(
@@ -98,15 +65,19 @@ export async function updateApplicationStatus(
   stage?: string,
   note?: string
 ): Promise<{ success: boolean; data: Application; message: string }> {
-  return http.put<{ success: boolean; data: Application; message: string }>(
+  const response = await axiosInstance.put<{ success: boolean; data: Application; message: string }>(
     `/applications/${id}/status`,
     { status, stage, note }
   );
+  return response.data;
 }
 
 export async function getApplicationAnalytics(
   jobId?: string
 ): Promise<{ success: boolean; data: ApplicationAnalytics }> {
-  const url = `/analytics/applications${jobId ? `?jobId=${jobId}` : ''}`;
-  return http.get<{ success: boolean; data: ApplicationAnalytics }>(url);
+  const response = await axiosInstance.get<{ success: boolean; data: ApplicationAnalytics }>(
+    '/analytics/applications',
+    { params: jobId ? { jobId } : undefined }
+  );
+  return response.data;
 }

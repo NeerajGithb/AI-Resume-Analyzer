@@ -6,6 +6,10 @@ import { TopLoader } from '@/components/ui/TopLoader';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import './globals.css';
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://resupulse.app'),
@@ -67,7 +71,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} h-full`}>
+    <html lang="en" className={cn("h-full", inter.variable, jetbrainsMono.variable, "font-sans", geist.variable)}>
       <head>
         <script
           type="application/ld+json"
@@ -102,7 +106,7 @@ export default function RootLayout({
         </Suspense>
         <Header />
         <QueryProvider>
-          <main className="flex-1">{children}</main>
+          <main className='flex-1 mt-16'>{children}</main>
         </QueryProvider>
         <Footer />
       </body>

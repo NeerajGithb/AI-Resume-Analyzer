@@ -1,20 +1,26 @@
-import { http } from '@/lib/httpClient';
-import { AuthResponse, SignupData, LoginData, User } from '@/types';
+import axiosInstance from '@/lib/api/baseService';
+import { SignupData, LoginData, User } from '@/types';
 
-export async function signup(data: SignupData): Promise<AuthResponse> {
-  return http.postJson<AuthResponse>('/auth/signup', data, undefined as any);
+interface AuthResponse {
+  success: boolean;
+  data: { user: User };
 }
 
-export async function login(data: LoginData): Promise<AuthResponse> {
-  return http.postJson<AuthResponse>('/auth/login', data, undefined as any);
+export async function signup(data: SignupData): Promise<User> {
+  const res = await axiosInstance.post<AuthResponse>('/auth/register', data);
+  return res.data.data.user;
+}
+
+export async function login(data: LoginData): Promise<User> {
+  const res = await axiosInstance.post<AuthResponse>('/auth/login', data);
+  return res.data.data.user;
 }
 
 export async function getCurrentUser(): Promise<User> {
-  const response = await http.get<{ success: boolean; data: User }>('/auth/me');
-  return response.data;
+  const res = await axiosInstance.get<AuthResponse>('/auth/me');
+  return res.data.data.user;
 }
 
 export async function logout(): Promise<void> {
-  await http.post('/auth/logout');
+  await axiosInstance.post('/auth/logout');
 }
-

@@ -127,7 +127,7 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-sm max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900">
@@ -146,7 +146,7 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
         {/* Content */}
         <div className="p-6">
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-sm text-red-800">
               {error}
             </div>
           )}
@@ -162,7 +162,7 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
                   type="text"
                   value={candidateInfo.name}
                   onChange={(e) => setCandidateInfo({ ...candidateInfo, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
               </div>
@@ -175,7 +175,7 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
                   type="email"
                   value={candidateInfo.email}
                   onChange={(e) => setCandidateInfo({ ...candidateInfo, email: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
               </div>
@@ -188,7 +188,7 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
                   type="tel"
                   value={candidateInfo.phone}
                   onChange={(e) => setCandidateInfo({ ...candidateInfo, phone: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
               </div>
@@ -202,7 +202,7 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
                   value={candidateInfo.linkedin}
                   onChange={(e) => setCandidateInfo({ ...candidateInfo, linkedin: e.target.value })}
                   placeholder="https://linkedin.com/in/yourprofile"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
@@ -215,13 +215,13 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
                   value={candidateInfo.portfolio}
                   onChange={(e) => setCandidateInfo({ ...candidateInfo, portfolio: e.target.value })}
                   placeholder="https://yourportfolio.com"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="w-full px-6 py-3 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors font-medium"
               >
                 Continue to Resume Upload
               </button>
@@ -231,7 +231,7 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
           {/* Step 2: Resume Upload */}
           {step === 'resume' && (
             <div>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-sm p-4 mb-6">
                 <div className="flex gap-3">
                   <svg className="w-6 h-6 text-yellow-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -255,7 +255,7 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
                   type="file"
                   accept=".pdf"
                   onChange={handleFileChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 {selectedFile && (
                   <p className="mt-2 text-sm text-gray-600">
@@ -267,14 +267,14 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
               <div className="flex gap-3">
                 <button
                   onClick={() => setStep('details')}
-                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-sm hover:bg-gray-50 transition-colors font-medium"
                 >
                   Back
                 </button>
                 <button
                   onClick={handleResumeAnalysis}
                   disabled={!selectedFile || loading}
-                  className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Analyzing...' : 'Analyze Resume'}
                 </button>
@@ -286,7 +286,7 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
           {step === 'results' && analysisResult && (
             <div>
               {/* Score Display */}
-              <div className={`rounded-lg p-6 mb-6 ${
+              <div className={`rounded-sm p-6 mb-6 ${
                 analysisResult.canSubmit
                   ? 'bg-green-50 border-2 border-green-200'
                   : 'bg-red-50 border-2 border-red-200'
@@ -315,7 +315,7 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
 
               {/* Feedback */}
               {!analysisResult.canSubmit && analysisResult.improvements.length > 0 && (
-                <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+                <div className="bg-white border border-gray-200 rounded-sm p-6 mb-6">
                   <h4 className="font-semibold text-gray-900 mb-4">Areas for Improvement:</h4>
                   <ul className="space-y-3">
                     {analysisResult.improvements.slice(0, 5).map((improvement, index) => (
@@ -333,7 +333,7 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
                 {!analysisResult.canSubmit && (
                   <button
                     onClick={handleReupload}
-                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-sm hover:bg-gray-50 transition-colors font-medium"
                   >
                     Upload Different Resume
                   </button>
@@ -342,14 +342,14 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
                   <>
                     <button
                       onClick={onClose}
-                      className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                      className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-sm hover:bg-gray-50 transition-colors font-medium"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSubmit}
                       disabled={loading}
-                      className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
+                      className="flex-1 px-6 py-3 bg-green-600 text-white rounded-sm hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
                     >
                       {loading ? 'Submitting...' : 'Submit Application'}
                     </button>
@@ -380,7 +380,7 @@ export default function ApplicationModal({ job, onClose }: ApplicationModalProps
 
               <button
                 onClick={onClose}
-                className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="px-8 py-3 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors font-medium"
               >
                 Close
               </button>

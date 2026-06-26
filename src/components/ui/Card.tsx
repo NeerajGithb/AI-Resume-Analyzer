@@ -39,7 +39,7 @@ Card.displayName = 'Card';
 export function CardHeader({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn('flex items-center justify-between px-5 py-4 border-b border-[var(--border)]', className)}
+      className={cn('flex items-center justify-between px-5 py-4 border-b border-[var(--border)] bg-gradient-to-r from-blue-50 to-violet-50', className)}
       {...props}
     >
       {children}
@@ -51,7 +51,7 @@ export function CardHeader({ className, children, ...props }: HTMLAttributes<HTM
 export function CardTitle({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className={cn('text-sm font-semibold text-[var(--text-primary)] leading-none', className)}
+      className={cn('text-base font-bold text-[var(--text-primary)] leading-none tracking-tight', className)}
       {...props}
     >
       {children}

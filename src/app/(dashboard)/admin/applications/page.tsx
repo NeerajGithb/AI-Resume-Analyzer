@@ -96,8 +96,8 @@ export default function AdminApplicationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50">
+      <div className="px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Application Management</h1>
           <p className="text-gray-600 mt-2">Review and manage job applications</p>
@@ -105,26 +105,26 @@ export default function AdminApplicationsPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-sm shadow p-6">
             <p className="text-sm text-gray-600 mb-1">Total Applications</p>
             <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-sm shadow p-6">
             <p className="text-sm text-gray-600 mb-1">Average ATS Score</p>
             <p className="text-3xl font-bold text-blue-600">{stats.avgScore}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-sm shadow p-6">
             <p className="text-sm text-gray-600 mb-1">New Submissions</p>
             <p className="text-3xl font-bold text-yellow-600">{stats.submitted}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-sm shadow p-6">
             <p className="text-sm text-gray-600 mb-1">Shortlisted</p>
             <p className="text-3xl font-bold text-green-600">{stats.shortlisted}</p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <div className="bg-white rounded-sm shadow p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -133,7 +133,7 @@ export default function AdminApplicationsPage() {
               <select
                 value={selectedJob}
                 onChange={(e) => setSelectedJob(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 {jobs.map((job) => (
                   <option key={job._id} value={job._id}>
@@ -150,7 +150,7 @@ export default function AdminApplicationsPage() {
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All Statuses</option>
                 <option value="submitted">Submitted</option>
@@ -173,7 +173,7 @@ export default function AdminApplicationsPage() {
                 placeholder="0"
                 min="0"
                 max="100"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
@@ -188,14 +188,14 @@ export default function AdminApplicationsPage() {
                 placeholder="100"
                 min="0"
                 max="100"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
         </div>
 
         {/* Applications Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-sm shadow overflow-hidden">
           {loading ? (
             <div className="text-center py-12">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
