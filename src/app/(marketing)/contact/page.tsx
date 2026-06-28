@@ -61,17 +61,15 @@ export default function ContactPage() {
     e.preventDefault();
     setStatus('submitting');
     
-    // Simulate form submission
+    // Simulate form submission (replace with real API call)
     await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    // In production, you'd send this to your backend API
-    console.log('Form submitted:', formData);
     
     setStatus('success');
     setFormData({ name: '', email: '', subject: '', message: '' });
     
     setTimeout(() => setStatus('idle'), 5000);
   };
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));

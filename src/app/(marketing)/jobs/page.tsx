@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getJobs } from '@/services/jobService';
+import { list as getJobs } from '@/services/jobService';
 import type { Job } from '@/types';
 
 export default function JobsPage() {
@@ -14,21 +14,21 @@ export default function JobsPage() {
     location: ''
   });
 
-  useEffect(() => {
-    fetchJobs();
-  }, [filters]);
-
   const fetchJobs = async () => {
     try {
       setLoading(true);
       const response = await getJobs(filters);
-      setJobs(response.data);
+      setJobs(response.jobs);
     } catch (error) {
       console.error('Failed to fetch jobs:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchJobs();
+  }, [filters]);
 
   const getJobTypeColor = (type: string) => {
     const colors: Record<string, string> = {

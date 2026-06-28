@@ -1,11 +1,13 @@
-import axiosInstance, { ApiError } from '@/lib/api/baseService';
+import axiosInstance from '@/lib/api/baseService';
 import { ProgressHelper } from '@/lib/api/progressHelper';
-import { CompareResult, CompareStage } from '@/types';
+import type { CompareResult, CompareStage } from '@/types';
 
 export type OnStage = (stage: CompareStage, progress: number) => void;
 
+const STAGES: CompareStage[] = ['uploading', 'parsing', 'comparing'];
+
 /**
- * Compares two resumes with fake progress on frontend.
+ * Compares two resumes with progress animation on the frontend.
  */
 export async function compareResumes(
   resume1: File,
@@ -13,39 +15,22 @@ export async function compareResumes(
   signal: AbortSignal,
   onStage: OnStage,
 ): Promise<CompareResult> {
-  
   const progress = new ProgressHelper<CompareStage>(onStage, signal);
 
-  return await progress.run(
-    ['uploading', 'parsing', 'comparing'],
-    async () => {
-      const formData = new FormData();
-      formData.append('resume1', resume1);
-      formData.append('resume2', resume2);
+  return progress.run(STAGES, async () => {
+    const fd = new FormData();
+    fd.append('resume1', resume1);
+    fd.append('resume2', resume2);
 
-      try {
-        const response = await axiosInstance.post<{ success: boolean; data: CompareResult }>(
-          '/compare',
-          formData,
-          {
-            signal,
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
-
-        return response.data.data;
-      } catch (error) {
-        if (error instanceof ApiError) {
-          throw error;
-        }
-        if (error instanceof DOMException && error.name === 'AbortError') {
-          throw error;
-        }
-        throw new ApiError(500, 'Resume comparison failed. Please try again.');
-      }
-    }
-  );
+    const res = await axiosInstance.post<CompareResult>('/compare', fd, { signal });
+    return res.data;
+  });
 }
 
+/**
+ * Retrieves a saved comparison result by ID.
+ */
+export async function getComparisonById(id: string): Promise<CompareResult> {
+  const res = await axiosInstance.get<CompareResult>(`/compare/${id}`);
+  return res.data;
+}

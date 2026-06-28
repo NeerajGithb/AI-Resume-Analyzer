@@ -2,33 +2,29 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
-import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { GlobalProgress } from '@/components/common/GlobalProgress';
-import { useLatestBuilderV2Query, useBuilderV2ResultQuery } from '@/hooks/useResumeBuilderV2Mutation';
-import { useResumeBuilderV2Store } from '@/store/resumeBuilderV2Store';
+import { useCoverLetterStore } from '@/store/coverLetterUIStore';
+import {
+  useLatestCoverLetterQuery,
+  useCoverLetterResultQuery,
+  useCoverLetterMutation,
+} from '@/hooks/useCoverLetterMutation';
+import { useQueryClient } from '@tanstack/react-query';
+import { CoverLetterDashboard } from '@/components/coverLetter/CoverLetterDashboard';
 import AppShell from '@/components/layout/AppShell';
-import type { BuilderV2Result } from '@/hooks/useResumeBuilderV2Mutation';
 
-// ─── Icons ─────────────────────────────────────────────────────────────────────
-function DownloadIcon() {
+function AlertIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-red-400">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
     </svg>
   );
 }
-function PlusIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
+
 function ArrowLeftIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -38,282 +34,71 @@ function ArrowLeftIcon() {
   );
 }
 
-// ─── Progress stage config (mirrors cover letter pattern) ─────────────────────
-const BUILDER_STAGES = ['uploading', 'analyzing', 'organizing', 'generating'] as const;
-const BUILDER_STAGE_META: Record<string, { label: string; desc: string }> = {
-  uploading:  { label: 'Uploading',   desc: 'Processing your information'     },
-  analyzing:  { label: 'Analyzing',   desc: 'Analysing your profile'          },
-  organizing: { label: 'Organizing',  desc: 'Structuring content sections'    },
-  generating: { label: 'Generating',  desc: 'Writing your resume'             },
-};
-
-// ─── Resume preview ────────────────────────────────────────────────────────────
-function ResumePreview({ result }: { result: BuilderV2Result }) {
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm font-sans">
-      {/* Header */}
-      <div className="text-center border-b-2 border-blue-700 pb-4 mb-6">
-        <h2 className="text-2xl font-bold text-blue-900">{result.name}</h2>
-        <p className="text-sm text-gray-600 mt-1">
-          {[result.email, result.phone, result.location].filter(Boolean).join(' | ')}
-        </p>
-        {(result.linkedin || result.github || result.leetcode) && (
-          <div className="flex justify-center gap-4 mt-2 text-sm flex-wrap">
-            {result.linkedin && (
-              <a href={result.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">LinkedIn</a>
-            )}
-            {result.github && (
-              <a href={result.github} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">GitHub</a>
-            )}
-            {result.leetcode && (
-              <a href={result.leetcode} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">LeetCode</a>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Summary */}
-      <Section title="Professional Summary">
-        <p className="text-sm text-gray-700 leading-relaxed">{result.summary}</p>
-      </Section>
-
-      {/* Work Experience */}
-      {result.experience.length > 0 && (
-        <Section title="Work Experience">
-          <div className="space-y-5">
-            {result.experience.map((exp, i) => {
-              const dates = [exp.startDate, exp.endDate].filter(Boolean).join(' – ');
-              return (
-                <div key={i}>
-                  <div className="flex justify-between items-baseline">
-                    <div>
-                      <span className="font-semibold text-gray-900">{exp.jobTitle}</span>
-                      {exp.employer && <span className="text-gray-600 text-sm"> — {exp.employer}</span>}
-                    </div>
-                    {dates && <span className="text-xs text-gray-500 shrink-0 ml-2">{dates}</span>}
-                  </div>
-                  {exp.location && <p className="text-xs text-gray-500 italic">{exp.location}</p>}
-                  {exp.description && (
-                    <ul className="mt-2 space-y-1 list-disc list-inside text-sm text-gray-700">
-                      {exp.description
-                        .split('\n')
-                        .map((l) => l.replace(/^[•\-]\s*/, '').trim())
-                        .filter(Boolean)
-                        .map((line, li) => <li key={li}>{line}</li>)}
-                    </ul>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </Section>
-      )}
-
-      {/* Education */}
-      {result.education.length > 0 && (
-        <Section title="Education">
-          <div className="space-y-3">
-            {result.education.map((edu, i) => (
-              <div key={i} className="flex justify-between items-start">
-                <div>
-                  <p className="font-semibold text-gray-900">{edu.degree}</p>
-                  <p className="text-sm text-gray-600">{edu.institution}{edu.location ? `, ${edu.location}` : ''}</p>
-                  {edu.gpa && <p className="text-xs text-gray-500">GPA: {edu.gpa}</p>}
-                </div>
-                {edu.graduationDate && <span className="text-xs text-gray-500 shrink-0 ml-2">{edu.graduationDate}</span>}
-              </div>
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {/* Projects */}
-      {result.projects.length > 0 && (
-        <Section title="Projects">
-          <div className="space-y-4">
-            {result.projects.map((project, idx) => (
-              <div key={idx}>
-                <div className="flex justify-between items-baseline mb-1">
-                  <span className="font-semibold text-gray-900">{project.name}</span>
-                  <span className="text-xs text-gray-500">{project.year}</span>
-                </div>
-                <p className="text-xs text-gray-500 italic mb-1">{project.technologies}</p>
-                {project.url && (
-                  <a href={project.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline block mb-1">
-                    {project.url}
-                  </a>
-                )}
-                <ul className="list-disc list-inside text-sm space-y-1 text-gray-700">
-                  {project.bullets.map((b, bi) => <li key={bi}>{b}</li>)}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {/* Skills */}
-      <Section title="Skills">
-        <div className="space-y-1 text-sm text-gray-700">
-          {result.technicalSkills && <p><span className="font-medium">Technical:</span> {result.technicalSkills}</p>}
-          {result.softSkills      && <p><span className="font-medium">Soft Skills:</span> {result.softSkills}</p>}
-          {result.languages       && <p><span className="font-medium">Languages:</span> {result.languages}</p>}
-        </div>
-      </Section>
-
-      {/* Achievements */}
-      {result.achievements.length > 0 && (
-        <Section title="Achievements">
-          <ul className="list-disc list-inside text-sm space-y-1 text-gray-700">
-            {result.achievements.map((a, i) => <li key={i}>{a}</li>)}
-          </ul>
-        </Section>
-      )}
-    </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="mb-6">
-      <h4 className="font-bold text-base text-blue-900 border-b border-blue-200 pb-1 mb-3 uppercase tracking-wide text-sm">
-        {title}
-      </h4>
-      {children}
-    </div>
-  );
-}
-
-// ─── Page ──────────────────────────────────────────────────────────────────────
-export default function BuilderV2ResultPage() {
-  const params = useParams();
+export default function CoverLetterReportPage() {
   const router = useRouter();
+  const params = useParams();
   const id = typeof params.id === 'string' ? params.id : null;
+  const queryClient = useQueryClient();
 
-  // Temp tokens are base64 of "processing:timestamp:random"
-  const isTempToken = id
-    ? (() => {
-        try { return atob(id.replace(/-/g, '+').replace(/_/g, '/')).startsWith('processing:'); }
-        catch { return false; }
-      })()
-    : false;
+  const isTempToken = id ? (() => {
+    try {
+      const decoded = atob(id.replace(/-/g, '+').replace(/_/g, '/'));
+      return decoded.startsWith('generating:');
+    } catch {
+      return false;
+    }
+  })() : false;
 
-  const { stage, progress } = useResumeBuilderV2Store();
+  const { resume, stage, progress, reset, jobTitle, companyName } = useCoverLetterStore();
+  const { abort } = useCoverLetterMutation();
 
-  const { data: cache } = useLatestBuilderV2Query();
+  const { data: cache } = useLatestCoverLetterQuery();
   const cacheResult = cache?.result ?? null;
   const cacheError  = cache?.error  ?? null;
 
-  const { data: apiResult, isLoading, error: apiError } = useBuilderV2ResultQuery(
-    isTempToken ? undefined : (id ?? undefined),
+  const { data: apiResult, isPending: isLoadingApi, error: apiError } = useCoverLetterResultQuery(
+    isTempToken ? undefined : id || undefined
   );
 
-  const result = cacheResult ?? apiResult ?? null;
-  const error  = cacheError  ?? apiError  ?? null;
+  const result    = cacheResult || apiResult || null;
+  // Patch missing fields from the Zustand store (covers stale cache/persisted data)
+  const patchedResult = result ? {
+    ...result,
+    jobTitle:    result.jobTitle    || jobTitle    || '',
+    companyName: result.companyName || companyName || '',
+  } : null;
+  const error     = cacheError  || apiError  || null;
+  const isLoading = !cacheResult && isLoadingApi && !isTempToken;
 
-  // Once generation completes, swap temp URL for real ID
   useEffect(() => {
-    if (isTempToken && result?.id) {
-      router.replace(`/resume-builder-v2/report/${result.id}`);
+    if (isTempToken && patchedResult?.id && !stage) {
+      router.replace(`/cover-letter/report/${patchedResult.id}`);
     }
-  }, [isTempToken, result?.id, router]);
+  }, [isTempToken, patchedResult?.id, stage, router]);
 
-  const handleDownloadPDF = async () => {
-    if (!result?.id) return;
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/builder-v2/${result.id}/download`,
-      );
-      if (!response.ok) throw new Error('Download failed');
-      const blob = await response.blob();
-      const url  = window.URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href     = url;
-      a.download = `${result.name.replace(/\s+/g, '_')}_Resume.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (err) {
-      console.error('Download failed:', err);
-    }
+  const handleReset = () => {
+    reset();
+    queryClient.setQueryData(['latest-cover-letter'], undefined);
+    router.push('/cover-letter');
   };
 
-  // ── Loading / progress state (mirrors cover letter pattern) ────────────────
-  const showProgress = stage !== null || (isTempToken && !result);
-
-  if (showProgress) {
-    return (
-      <AppShell>
-        <GlobalProgress
-          title="Generating Your Resume"
-          stages={BUILDER_STAGES}
-          stageMeta={BUILDER_STAGE_META}
-          stage={stage ?? 'generating'}
-          progress={progress ?? 80}
-        />
-      </AppShell>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <AppShell>
-        <div className="min-h-screen flex items-center justify-center p-6">
-          <div className="bg-white border border-gray-200 rounded-xl p-12 shadow-sm text-center max-w-md">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
-            <h2 className="text-sm font-semibold text-gray-900 mb-2">Loading Resume…</h2>
-            <p className="text-xs text-gray-500">Please wait while we fetch your results</p>
-          </div>
-        </div>
-      </AppShell>
-    );
-  }
-
-  if (error) {
-    return (
-      <AppShell>
-        <div className="min-h-screen flex items-center justify-center p-6">
-          <div className="text-center space-y-4 max-w-md w-full">
-            <div className="w-16 h-16 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center mx-auto">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-red-400">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-            </div>
-            <ErrorMessage message={(error as Error)?.message || 'Could not load this resume.'} />
-            <div className="flex items-center gap-2 justify-center">
-              <Button variant="secondary" size="sm" onClick={() => router.push('/resume-builder-v2')}>
-                <ArrowLeftIcon /> Go Back
-              </Button>
-              <Button variant="default" size="sm" onClick={() => router.refresh()}>
-                Try Again
-              </Button>
-            </div>
-          </div>
-        </div>
-      </AppShell>
-    );
-  }
-
-  if (!result) {
+  /* ── No context ── */
+  if (!resume && !patchedResult && !stage && !isLoading && !isTempToken) {
     return (
       <AppShell>
         <div className="min-h-screen flex items-center justify-center p-6">
           <div className="text-center space-y-4 max-w-md">
-            <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center mx-auto">
-              <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
+            <div className="w-16 h-16 rounded-[var(--radius-lg)] bg-gray-100 flex items-center justify-center mx-auto">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-gray-400">
+                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
             <div>
-              <h2 className="text-base font-semibold text-gray-900">No Resume Found</h2>
-              <p className="text-sm text-gray-600 mt-1">This resume doesn't exist or has been deleted.</p>
+              <h2 className="text-base font-semibold text-[var(--text-primary)]">No cover letter found</h2>
+              <p className="text-sm text-[var(--text-muted)] mt-1">Upload your resume to generate a cover letter.</p>
             </div>
-            <Button variant="default" size="sm" onClick={() => router.push('/resume-builder-v2')}>
-              <PlusIcon /> Build New Resume
+            <Button variant="default" onClick={() => router.push('/cover-letter')}>
+              <ArrowLeftIcon /> Generate Cover Letter
             </Button>
           </div>
         </div>
@@ -321,42 +106,84 @@ export default function BuilderV2ResultPage() {
     );
   }
 
-  return (
-    <AppShell>
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="space-y-6"
-        >
-          {/* Success banner */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm text-center">
-            <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
-              <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-1">Resume Generated!</h2>
-            <p className="text-sm text-gray-500">
-              Your resume for <strong>{result.targetRole}</strong> is ready.
-            </p>
+  /* ── Loading from API ── */
+  if (isLoading) {
+    return (
+      <AppShell>
+        <div className="min-h-screen flex items-center justify-center p-6">
+          <div className="bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-12 shadow-[var(--shadow-xs)] text-center max-w-md">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)] mx-auto mb-4" />
+            <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-2">Loading cover letter…</h2>
+            <p className="text-xs text-[var(--text-muted)]">Fetching your results</p>
           </div>
+        </div>
+      </AppShell>
+    );
+  }
 
-          {/* Full preview */}
-          <ResumePreview result={result} />
+  /* ── Full-bleed states: progress / error / dashboard ── */
+  return (
+    <AnimatePresence mode="wait">
 
-          {/* Actions */}
-          <div className="flex gap-4 justify-center flex-wrap">
-            <Button onClick={handleDownloadPDF} className="flex items-center gap-2">
-              <DownloadIcon /> Download PDF
-            </Button>
-            <Button variant="secondary" onClick={() => router.push('/resume-builder-v2')} className="flex items-center gap-2">
-              <PlusIcon /> Build Another Resume
-            </Button>
+      {/* Generating */}
+      {stage && (
+        <motion.div key="progress" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+          style={{ height: '100vh', overflow: 'hidden' }}>
+          <GlobalProgress
+            title="Generating your cover letter"
+            stages={['uploading', 'parsing', 'generating', 'finalizing']}
+            stageMeta={{
+              uploading:  { label: 'Uploading',  desc: 'Securely uploading your resume'          },
+              parsing:    { label: 'Parsing',    desc: 'Extracting your experience and skills'   },
+              generating: { label: 'Writing',    desc: 'Crafting your personalized cover letter' },
+              finalizing: { label: 'Finalizing', desc: 'Polishing and preparing your letter'     },
+            }}
+            stage={stage}
+            progress={progress}
+            onCancel={() => { abort(); router.push('/cover-letter'); }}
+          />
+        </motion.div>
+      )}
+
+      {/* Error */}
+      {error && !stage && !patchedResult && (
+        <motion.div key="error" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}
+          style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div style={{ textAlign: 'center', maxWidth: 400 }}>
+            <div style={{
+              width: 64, height: 64, borderRadius: 16,
+              background: '#fef2f2', border: '1px solid #fecaca',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',
+            }}>
+              <AlertIcon />
+            </div>
+            <h2 style={{ fontSize: 16, fontWeight: 600, color: '#111', margin: '0 0 8px' }}>Generation failed</h2>
+            <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6, margin: '0 0 20px' }}>
+              {(error as Error)?.message || 'An error occurred during cover letter generation'}
+            </p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <Button variant="secondary" size="sm" onClick={() => router.push('/cover-letter')}>
+                <ArrowLeftIcon /> Go back
+              </Button>
+              <Button variant="default" size="sm" onClick={() => router.refresh()}>Try again</Button>
+            </div>
           </div>
         </motion.div>
-      </div>
-    </AppShell>
+      )}
+
+      {/* Dashboard — full height, no AppShell wrapper */}
+      {patchedResult && !stage && (
+        <motion.div
+          key="results"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.25 }}
+          style={{ height: '100vh', overflow: 'hidden' }}
+        >
+          <CoverLetterDashboard result={patchedResult} onReset={handleReset} />
+        </motion.div>
+      )}
+
+    </AnimatePresence>
   );
 }

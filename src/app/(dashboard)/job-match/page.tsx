@@ -35,15 +35,8 @@ export default function JobMatchPage() {
       { resume, jobDescription },
       {
         onSuccess: (data) => {
-          if (!data?.id) {
-            console.error('[JobMatch] Invalid response: missing ID', data);
-            return;
-          }
-          console.log('[JobMatch] Match complete, replacing URL with ID:', data.id);
+          if (!data?.id) return;
           router.replace(`/job-match/report/${data.id}`);
-        },
-        onError: (error) => {
-          console.error('[JobMatch] Match failed:', error);
         },
       }
     );

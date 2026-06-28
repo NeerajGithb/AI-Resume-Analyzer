@@ -1,38 +1,40 @@
 import axiosInstance from '@/lib/api/baseService';
-import type { Job, JobsResponse } from '@/types';
+import type { Job } from '@/types';
 
-interface JobFilters {
+export interface JobFilters {
+  status?:     string;
+  page?:       number;
+  limit?:      number;
   department?: string;
-  type?: string;
-  location?: string;
-  status?: string;
-  page?: number;
-  limit?: number;
+  type?:       string;
+  location?:   string;
 }
 
-export async function getJobs(filters?: JobFilters): Promise<JobsResponse> {
-  const response = await axiosInstance.get<JobsResponse>('/jobs', {
-    params: filters
-  });
-  return response.data;
+export interface JobsResponse {
+  jobs:       Job[];
+  pagination: { total: number; page: number; limit: number; pages: number };
 }
 
-export async function getJobById(id: string): Promise<{ success: boolean; data: Job }> {
-  const response = await axiosInstance.get<{ success: boolean; data: Job }>(`/jobs/${id}`);
-  return response.data;
+export async function list(filters?: JobFilters): Promise<JobsResponse> {
+  const res = await axiosInstance.get<JobsResponse>('/jobs', { params: filters });
+  return res.data;
 }
 
-export async function createJob(jobData: Partial<Job>): Promise<{ success: boolean; data: Job; message: string }> {
-  const response = await axiosInstance.post<{ success: boolean; data: Job; message: string }>('/jobs', jobData);
-  return response.data;
+export async function getById(id: string): Promise<Job> {
+  const res = await axiosInstance.get<Job>(`/jobs/${id}`);
+  return res.data;
 }
 
-export async function updateJob(id: string, updates: Partial<Job>): Promise<{ success: boolean; data: Job; message: string }> {
-  const response = await axiosInstance.put<{ success: boolean; data: Job; message: string }>(`/jobs/${id}`, updates);
-  return response.data;
+export async function create(data: Partial<Job>): Promise<Job> {
+  const res = await axiosInstance.post<Job>('/jobs', data);
+  return res.data;
 }
 
-export async function deleteJob(id: string): Promise<{ success: boolean; message: string }> {
-  const response = await axiosInstance.delete<{ success: boolean; message: string }>(`/jobs/${id}`);
-  return response.data;
+export async function update(id: string, data: Partial<Job>): Promise<Job> {
+  const res = await axiosInstance.put<Job>(`/jobs/${id}`, data);
+  return res.data;
+}
+
+export async function remove(id: string): Promise<void> {
+  await axiosInstance.delete(`/jobs/${id}`);
 }

@@ -2,32 +2,25 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
 import * as analysisService from '@/services/analysisService';
 import { useAnalysisStore } from '@/store/analysisUIStore';
-import { AnalysisResult } from '@/types';
+import { queryKeys } from '@/lib/api/queryKeys';
+import type { AnalysisResult } from '@/types';
 
 export interface AnalysisInput {
-  file: File;
+  file:               File;
   yearsOfExperience?: string;
-  targetRole?: string;
+  targetRole?:        string;
 }
 
 export type AnalysisResponse = AnalysisResult & { id: string };
 
-export interface LatestAnalysisCache {
-  result: AnalysisResponse | null;
-  error: Error | null;
-}
-
 export function useAnalyzeMutation() {
-  const queryClient = useQueryClient();
+  const queryClient         = useQueryClient();
   const { setStageProgress, setFile } = useAnalysisStore();
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const mutation = useMutation<AnalysisResponse, Error, AnalysisInput>({
     mutationFn: async ({ file, yearsOfExperience, targetRole }) => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-      
+      abortControllerRef.current?.abort();
       abortControllerRef.current = new AbortController();
       const signal = abortControllerRef.current.signal;
 
@@ -40,7 +33,7 @@ export function useAnalyzeMutation() {
           signal,
           (stage, progress) => setStageProgress(stage, progress),
           yearsOfExperience,
-          targetRole
+          targetRole,
         );
       } finally {
         abortControllerRef.current = null;
@@ -48,18 +41,13 @@ export function useAnalyzeMutation() {
     },
     onSuccess: (data) => {
       setStageProgress(null, 0);
-      queryClient.setQueryData<LatestAnalysisCache>(['latest-analysis'], { 
-        result: data, 
-        error: null 
-      });
-      queryClient.invalidateQueries({ queryKey: ['history'] });
+      // Cache the latest result and invalidate history list
+      queryClient.setQueryData<AnalysisResponse>(queryKeys.analysis.latest(), data);
+      queryClient.setQueryData<AnalysisResponse>(queryKeys.analysis.detail(data.id), data);
+      queryClient.invalidateQueries({ queryKey: queryKeys.history.list(1, 10) });
     },
-    onError: (err) => {
+    onError: () => {
       setStageProgress(null, 0);
-      queryClient.setQueryData<LatestAnalysisCache>(['latest-analysis'], { 
-        result: null, 
-        error: err 
-      });
     },
   });
 
@@ -77,21 +65,21 @@ export function useAnalyzeMutation() {
 }
 
 export function useLatestAnalysisQuery() {
-  return useQuery<LatestAnalysisCache>({
-    queryKey: ['latest-analysis'],
-    queryFn: () => ({ result: null, error: null }),
-    enabled: false,
+  return useQuery<AnalysisResponse | null>({
+    queryKey: queryKeys.analysis.latest(),
+    queryFn:  () => null,
+    enabled:  false, // Populated only via setQueryData from the mutation
   });
 }
 
 export function useAnalysisResultQuery(id?: string) {
   return useQuery<AnalysisResponse>({
-    queryKey: ['analysis-result', id],
-    queryFn: async () => {
+    queryKey: queryKeys.analysis.detail(id ?? ''),
+    queryFn:  async () => {
       if (!id) throw new Error('Analysis ID is required');
       return await analysisService.getById(id);
     },
-    enabled: !!id,
-    staleTime: 1000 * 60 * 60, // 1 hour
+    enabled:   !!id,
+    staleTime: 60 * 60 * 1000, // 1 hour — analysis reports don't change
   });
 }

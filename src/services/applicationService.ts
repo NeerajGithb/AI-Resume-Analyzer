@@ -1,83 +1,60 @@
-import axiosInstance, { ApiError } from '@/lib/api/baseService';
-import type {
-  PreCheckResult,
-  ApplicationSubmitData,
-  ApplicationSubmitResponse,
-  ApplicationsResponse,
-  Application,
-  ApplicationAnalytics
-} from '@/types';
+import axiosInstance from '@/lib/api/baseService';
+import type { Application, AdminApplication, AdminApplicationsListResponse } from '@/types';
 
-export async function preCheckResume(
-  jobId: string,
-  file: File
-): Promise<{ success: boolean; data: PreCheckResult }> {
-  const formData = new FormData();
-  formData.append('resume', file);
-  formData.append('jobId', jobId);
-
-  const response = await axiosInstance.post<{ success: boolean; data: PreCheckResult }>(
-    '/applications/pre-check',
-    formData,
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    }
-  );
-
-  return response.data;
+export interface ApplicationFilters {
+  status?:   string;
+  page?:     number;
+  limit?:    number;
 }
 
-export async function submitApplication(
-  data: ApplicationSubmitData
-): Promise<ApplicationSubmitResponse> {
-  const response = await axiosInstance.post<ApplicationSubmitResponse>('/applications/submit', data);
-  return response.data;
+export interface ApplicationsResponse {
+  applications: Application[];
+  pagination:   { total: number; page: number; limit: number; pages: number };
 }
 
-export async function getApplicationsByJob(
-  jobId: string,
-  filters?: {
-    status?: string;
-    minScore?: number;
-    maxScore?: number;
-    page?: number;
-    limit?: number;
-  }
-): Promise<ApplicationsResponse> {
-  const response = await axiosInstance.get<ApplicationsResponse>(`/applications/job/${jobId}`, {
-    params: filters
-  });
-  return response.data;
+export interface CreateApplicationPayload {
+  jobId?:    string;
+  company:   string;
+  position:  string;
+  status?:   string;
+  appliedDate?: string;
+  notes?:    string;
+  jobUrl?:   string;
 }
 
-export async function getApplicationById(
-  id: string
-): Promise<{ success: boolean; data: Application }> {
-  const response = await axiosInstance.get<{ success: boolean; data: Application }>(`/applications/${id}`);
-  return response.data;
+export interface UpdateApplicationPayload {
+  status?:   string;
+  notes?:    string;
+  company?:  string;
+  position?: string;
+  jobUrl?:   string;
 }
 
-export async function updateApplicationStatus(
-  id: string,
-  status: string,
-  stage?: string,
-  note?: string
-): Promise<{ success: boolean; data: Application; message: string }> {
-  const response = await axiosInstance.put<{ success: boolean; data: Application; message: string }>(
-    `/applications/${id}/status`,
-    { status, stage, note }
-  );
-  return response.data;
+/** User's own application tracker list */
+export async function list(filters?: ApplicationFilters): Promise<ApplicationsResponse> {
+  const res = await axiosInstance.get<ApplicationsResponse>('/applications', { params: filters });
+  return res.data;
 }
 
-export async function getApplicationAnalytics(
-  jobId?: string
-): Promise<{ success: boolean; data: ApplicationAnalytics }> {
-  const response = await axiosInstance.get<{ success: boolean; data: ApplicationAnalytics }>(
-    '/analytics/applications',
-    { params: jobId ? { jobId } : undefined }
-  );
-  return response.data;
+/** Admin: list all candidate applications for a job posting */
+export async function adminList(filters?: ApplicationFilters): Promise<AdminApplicationsListResponse> {
+  const res = await axiosInstance.get<AdminApplicationsListResponse>('/admin/applications', { params: filters });
+  return res.data;
+}
+
+export async function getById(id: string): Promise<Application> {
+  const res = await axiosInstance.get<Application>(`/applications/${id}`);
+  return res.data;
+}export async function create(data: CreateApplicationPayload): Promise<Application> {
+  const res = await axiosInstance.post<Application>('/applications', data);
+  return res.data;
+}
+
+export async function update(id: string, data: UpdateApplicationPayload): Promise<Application> {
+  const res = await axiosInstance.put<Application>(`/applications/${id}`, data);
+  return res.data;
+}
+
+export async function remove(id: string): Promise<void> {
+  await axiosInstance.delete(`/applications/${id}`);
 }

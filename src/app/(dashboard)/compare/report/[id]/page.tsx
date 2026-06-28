@@ -1,174 +1,173 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
-import { getComparisonById } from '@/services/resumeCompareService';
+import { GlobalProgress } from '@/components/common/GlobalProgress';
+import { useCompareStore } from '@/store/compareUIStore';
+import { useLatestCompareQuery, useCompareResultQuery, useCompareMutation } from '@/hooks/useCompareMutation';
+import { useQueryClient } from '@tanstack/react-query';
+import { CompareDashboard } from '@/components/compare/CompareDashboard';
+import AppShell from '@/components/layout/AppShell';
 
-interface ComparisonResult {
-  id: string;
-  winner: number;
-  verdict: string;
-  resume1_score: number;
-  resume1_grade: string;
-  resume1_strengths: string[];
-  resume1_weaknesses: string[];
-  resume2_score: number;
-  resume2_grade: string;
-  resume2_strengths: string[];
-  resume2_weaknesses: string[];
-  criteria: Array<{
-    name: string;
-    resume1: number;
-    resume2: number;
-    notes: string;
-  }>;
-  file1Name: string;
-  file2Name: string;
+function AlertIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-red-400">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
+    </svg>
+  );
 }
 
-export default function CompareResultPage() {
-  const params = useParams();
+function ArrowLeftIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="19" y1="12" x2="5" y2="12" />
+      <polyline points="12 19 5 12 12 5" />
+    </svg>
+  );
+}
+
+export default function CompareReportPage() {
   const router = useRouter();
+  const params = useParams();
   const id = typeof params.id === 'string' ? params.id : null;
+  const queryClient = useQueryClient();
 
-  const { data: result, isLoading, error } = useQuery({
-    queryKey: ['comparison', id],
-    queryFn: () => getComparisonById(id!),
-    enabled: !!id,
-  });
+  const isTempToken = id ? (() => {
+    try {
+      const decoded = atob(id.replace(/-/g, '+').replace(/_/g, '/'));
+      return decoded.startsWith('comparing:');
+    } catch {
+      return false;
+    }
+  })() : false;
 
+  const { resume1, stage, progress, reset } = useCompareStore();
+  const { abort } = useCompareMutation();
+
+  const { data: cache } = useLatestCompareQuery();
+  const cacheResult = cache?.result ?? null;
+  const cacheError  = cache?.error  ?? null;
+
+  const { data: apiResult, isPending: isLoadingApi, error: apiError } = useCompareResultQuery(
+    isTempToken ? undefined : id || undefined
+  );
+
+  const result    = cacheResult || apiResult || null;
+  const error     = cacheError  || apiError  || null;
+  const isLoading = !cacheResult && isLoadingApi && !isTempToken;
+  const showProgress = stage || (isTempToken && !result) || isLoading;
+
+  useEffect(() => {
+    if (isTempToken && result?.id && !stage) {
+      router.replace(`/compare/report/${result.id}`);
+    }
+  }, [isTempToken, result?.id, stage, router]);
+
+  const handleReset = () => {
+    reset();
+    queryClient.setQueryData(['latest-compare'], undefined);
+    router.push('/compare');
+  };
+
+  const handleGoBack = () => router.push('/compare');
+
+  /* ── No resume / result / stage ── */
+  if (!resume1 && !result && !stage && !isLoading && !isTempToken) {
+    return (
+      <AppShell>
+        <div className="min-h-screen flex items-center justify-center p-6">
+          <div className="text-center space-y-4 max-w-md">
+            <div className="w-16 h-16 rounded-[var(--radius-lg)] bg-gray-100 flex items-center justify-center mx-auto">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[var(--text-subtle)]">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-[var(--text-primary)]">No comparison found</h2>
+              <p className="text-sm text-[var(--text-muted)] mt-1">Upload two resumes to see a comparison report.</p>
+            </div>
+            <Button variant="default" onClick={handleGoBack}>
+              <ArrowLeftIcon />
+              Start New Comparison
+            </Button>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  /* ── Fetching from API ── */
   if (isLoading) {
     return (
-      <div>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)] mx-auto mb-4"></div>
-            <p className="text-sm text-[var(--text-muted)]">Loading comparison...</p>
+      <AppShell>
+        <div className="min-h-screen flex items-center justify-center p-6">
+          <div className="bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-12 shadow-[var(--shadow-xs)] text-center max-w-md">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)] mx-auto mb-4" />
+            <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-2">Loading Comparison...</h2>
+            <p className="text-xs text-[var(--text-muted)]">Please wait while we fetch your results</p>
           </div>
         </div>
-      </div>
+      </AppShell>
     );
   }
-
-  if (error || !result) {
-    return (
-      <div>
-        <div>
-          <div className="bg-red-50 border border-red-200 rounded-[var(--radius-lg)] p-6">
-            <div className="flex items-start gap-3 mb-4">
-              <div className="shrink-0 w-5 h-5 text-red-600">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-semibold text-red-900">Error Loading Comparison</h3>
-                <p className="text-sm text-red-700 mt-1">Could not load this comparison result.</p>
-              </div>
-            </div>
-            <Button variant="secondary" onClick={() => router.push('/compare')}>
-              Back to Compare
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const winnerName = result.winner === 1 ? 'Resume 1' : result.winner === 2 ? 'Resume 2' : 'Tie';
 
   return (
-    <div>
-      <div className="space-y-8">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-2xl font-bold text-[var(--text-primary)]">Resume Comparison Result</h1>
-              <p className="text-sm text-[var(--text-muted)] mt-1">
-                {result.file1Name} vs {result.file2Name}
-              </p>
-            </div>
-            <Button variant="secondary" onClick={() => router.push('/compare')}>
-              New Comparison
-            </Button>
-          </div>
+    <AppShell>
+      <AnimatePresence mode="wait">
 
-          <div className="bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-xs)] mb-6">
-            <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4">Winner: {winnerName}</h2>
-            <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{result.verdict}</p>
-          </div>
+        {/* ── Comparing: full-page progress ── */}
+        {stage && (
+          <motion.div key="progress" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+            <GlobalProgress
+              title="Comparing your resumes"
+              stages={['uploading', 'parsing', 'comparing', 'finalizing']}
+              stageMeta={{
+                uploading:  { label: 'Uploading',  desc: 'Securely uploading both PDFs'       },
+                parsing:    { label: 'Parsing',    desc: 'Extracting text from both resumes'  },
+                comparing:  { label: 'Comparing',  desc: 'Running side-by-side AI analysis'   },
+                finalizing: { label: 'Finalizing', desc: 'Preparing your comparison report'   },
+              }}
+              stage={stage}
+              progress={progress}
+              onCancel={() => { abort(); router.push('/compare'); }}
+            />
+          </motion.div>
+        )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-xs)]">
-              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-2">Resume 1</h3>
-              <p className="text-xs text-[var(--text-muted)] mb-3">{result.file1Name}</p>
-              <p className="text-2xl font-bold text-[var(--accent)] mb-1">{result.resume1_score}%</p>
-              <p className="text-xs text-[var(--text-muted)] mb-4">Grade: {result.resume1_grade}</p>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-xs font-semibold text-green-700 mb-2">Strengths</p>
-                  <ul className="text-xs text-[var(--text-secondary)] space-y-1">
-                    {result.resume1_strengths.map((s, i) => <li key={i}>• {s}</li>)}
-                  </ul>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-red-700 mb-2">Weaknesses</p>
-                  <ul className="text-xs text-[var(--text-secondary)] space-y-1">
-                    {result.resume1_weaknesses.map((w, i) => <li key={i}>• {w}</li>)}
-                  </ul>
-                </div>
+        {/* ── Error state ── */}
+        {error && !stage && !result && (
+          <motion.div key="error" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}
+            className="min-h-screen flex items-center justify-center p-6">
+            <div className="text-center space-y-4 max-w-md">
+              <div className="w-16 h-16 rounded-[var(--radius-lg)] bg-red-50 border border-red-100 flex items-center justify-center mx-auto">
+                <AlertIcon />
+              </div>
+              <div>
+                <h2 className="text-base font-semibold text-[var(--text-primary)]">Comparison failed</h2>
+                <p className="text-sm text-[var(--text-muted)] mt-1 leading-relaxed">
+                  {(error as Error)?.message || 'An error occurred during comparison'}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 justify-center">
+                <Button variant="secondary" size="sm" onClick={handleGoBack}><ArrowLeftIcon /> Go back</Button>
+                <Button variant="default" size="sm" onClick={() => router.refresh()}>Try again</Button>
               </div>
             </div>
+          </motion.div>
+        )}
 
-            <div className="bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-xs)]">
-              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-2">Resume 2</h3>
-              <p className="text-xs text-[var(--text-muted)] mb-3">{result.file2Name}</p>
-              <p className="text-2xl font-bold text-[var(--accent)] mb-1">{result.resume2_score}%</p>
-              <p className="text-xs text-[var(--text-muted)] mb-4">Grade: {result.resume2_grade}</p>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-xs font-semibold text-green-700 mb-2">Strengths</p>
-                  <ul className="text-xs text-[var(--text-secondary)] space-y-1">
-                    {result.resume2_strengths.map((s, i) => <li key={i}>• {s}</li>)}
-                  </ul>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-red-700 mb-2">Weaknesses</p>
-                  <ul className="text-xs text-[var(--text-secondary)] space-y-1">
-                    {result.resume2_weaknesses.map((w, i) => <li key={i}>• {w}</li>)}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* ── Results ── */}
+        {result && !stage && (
+          <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="p-6">
+            <CompareDashboard result={result} onReset={handleReset} />
+          </motion.div>
+        )}
 
-          <div className="bg-white border border-[var(--border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-xs)] mt-6">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Comparison Criteria</h3>
-            <div className="space-y-3">
-              {result.criteria.map((c, i) => (
-                <div key={i} className="border-l-2 border-[var(--accent)] pl-4">
-                  <p className="text-sm font-medium text-[var(--text-primary)]">{c.name}</p>
-                  <div className="flex items-center gap-4 mt-2">
-                    <span className="text-xs text-[var(--text-muted)]">
-                      Resume 1: <strong>{c.resume1}</strong>
-                    </span>
-                    <span className="text-xs text-[var(--text-muted)]">
-                      Resume 2: <strong>{c.resume2}</strong>
-                    </span>
-                  </div>
-                  <p className="text-xs text-[var(--text-muted)] mt-1">{c.notes}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </div>
+      </AnimatePresence>
+    </AppShell>
   );
 }

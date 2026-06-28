@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { getJobById } from '@/services/jobService';
+import { getById as getJobById } from '@/services/jobService';
 import ApplicationModal from '@/components/jobs/ApplicationModal';
 import type { Job } from '@/types';
 
@@ -14,21 +14,21 @@ export default function JobDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showApplicationModal, setShowApplicationModal] = useState(false);
 
-  useEffect(() => {
-    fetchJob();
-  }, [jobId]);
-
   const fetchJob = async () => {
     try {
       setLoading(true);
       const response = await getJobById(jobId);
-      setJob(response.data);
+      setJob(response);
     } catch (error) {
       console.error('Failed to fetch job:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchJob();
+  }, [jobId]);
 
   if (loading) {
     return (

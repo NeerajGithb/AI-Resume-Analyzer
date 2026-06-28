@@ -49,15 +49,8 @@ export default function AnalyzePage() {
       },
       {
         onSuccess: (data) => {
-          if (!data?.id) {
-            console.error('[Analyze] Invalid response: missing ID', data);
-            return;
-          }
-          console.log('[Analyze] Analysis complete, replacing URL with ID:', data.id);
+          if (!data?.id) return;
           router.replace(`/analyze/report/${data.id}`);
-        },
-        onError: (error) => {
-          console.error('[Analyze] Analysis failed:', error);
         },
       }
     );

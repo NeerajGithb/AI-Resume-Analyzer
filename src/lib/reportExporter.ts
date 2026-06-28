@@ -84,9 +84,17 @@ export function exportReportAsPDF(result: AnalysisResult, fileName: string): voi
   y += SECTION_GAP;
   drawHRule();
 
-  // ─── Section Scores ────────────────────────────────────────────────────────
+  // ─── Section Scores ────────────────────────────────────────────────────────────
   heading2('Section Scores');
-  for (const section of result.sections) {
+  const sections = [
+    { name: 'ATS Compatibility',  score: result.ats_compatibility?.score  ?? 0, feedback: result.ats_compatibility?.issues?.join(', ') ?? 'No issues found' },
+    { name: 'Keyword Analysis',   score: result.keyword_analysis?.score   ?? 0, feedback: '' },
+    { name: 'Experience Impact',  score: result.experience_impact?.score  ?? 0, feedback: result.experience_impact?.feedback ?? '' },
+    { name: 'Content Quality',    score: result.content_quality?.score    ?? 0, feedback: result.content_quality?.feedback  ?? '' },
+    { name: 'Resume Structure',   score: result.resume_structure?.score   ?? 0, feedback: result.resume_structure?.feedback  ?? '' },
+    { name: 'Role Matching',      score: result.role_matching?.score      ?? 0, feedback: result.role_matching?.match_explanation ?? '' },
+  ];
+  for (const section of sections) {
     checkPage(16);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
@@ -96,7 +104,7 @@ export function exportReportAsPDF(result: AnalysisResult, fileName: string): voi
     doc.setTextColor(107, 114, 128);
     doc.text(`${section.score}/100`, pageWidth - margin, y, { align: 'right' });
     y += 6;
-    bodyText(section.feedback);
+    if (section.feedback) bodyText(section.feedback);
     y += 2;
   }
   y += SECTION_GAP;
@@ -104,19 +112,20 @@ export function exportReportAsPDF(result: AnalysisResult, fileName: string): voi
 
   // ─── Missing Keywords ──────────────────────────────────────────────────────
   heading2('Missing Keywords');
-  if (result.missing_keywords.technical.length > 0) {
+  const missing = result.keyword_analysis?.missing ?? { technical: [], soft_skills: [], industry: [] };
+  if ((missing.technical ?? []).length > 0) {
     label('Technical');
-    bodyText(result.missing_keywords.technical.join(', '));
+    bodyText(missing.technical.join(', '));
     y += 3;
   }
-  if (result.missing_keywords.soft_skills.length > 0) {
+  if ((missing.soft_skills ?? []).length > 0) {
     label('Soft Skills');
-    bodyText(result.missing_keywords.soft_skills.join(', '));
+    bodyText(missing.soft_skills.join(', '));
     y += 3;
   }
-  if (result.missing_keywords.industry.length > 0) {
+  if ((missing.industry ?? []).length > 0) {
     label('Industry');
-    bodyText(result.missing_keywords.industry.join(', '));
+    bodyText(missing.industry.join(', '));
     y += 3;
   }
   y += SECTION_GAP;
@@ -124,7 +133,7 @@ export function exportReportAsPDF(result: AnalysisResult, fileName: string): voi
 
   // ─── Improvements ──────────────────────────────────────────────────────────
   heading2('Suggested Improvements');
-  result.improvements.forEach((imp, idx) => {
+  (result.improvements ?? []).forEach((imp, idx) => {
     checkPage(35);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
@@ -140,21 +149,23 @@ export function exportReportAsPDF(result: AnalysisResult, fileName: string): voi
     bodyText(`"${imp.rewrite}"`, [5, 150, 105]);
     y += 2;
 
-    label('Reason');
-    bodyText(imp.reason);
+    label('Impact');
+    bodyText(imp.impact ?? '');
     y += 5;
   });
   drawHRule();
 
-  // ─── Tone Feedback ─────────────────────────────────────────────────────────
+  // ─── Tone & Language Analysis ─────────────────────────────────────────────
   heading2('Tone & Language Analysis');
-  bodyText(result.tone_feedback);
+  const toneFeedback = result.content_quality?.feedback ?? 'Analysis not available';
+  bodyText(toneFeedback);
   y += SECTION_GAP;
   drawHRule();
 
-  // ─── ATS Tips ─────────────────────────────────────────────────────────────
+  // ─── ATS Recommendations ────────────────────────────────────────────────────
   heading2('ATS Recommendations');
-  result.ats_tips.forEach((tip, idx) => {
+  const atsTips = (result.ats_compatibility?.issues ?? []);
+  atsTips.forEach((tip: string, idx: number) => {
     checkPage(10);
     bodyText(`${idx + 1}. ${tip}`);
     y += 2;

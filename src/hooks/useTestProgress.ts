@@ -30,7 +30,7 @@ export function useTestProgress() {
     reset();
     let currentStageIndex = 0;
     let currentProgress = 0;
-    let intervalId: NodeJS.Timeout;
+    let intervalId: ReturnType<typeof setInterval> | undefined = undefined;
 
     const runStage = () => {
       if (currentStageIndex >= STAGES.length) {

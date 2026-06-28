@@ -1,39 +1,47 @@
 "use client";
-import { User, Plus, X, ChevronRight, CheckCircle2 } from "lucide-react";
+import { Plus, X, ChevronRight } from "lucide-react";
 import { useResumeBuilderV2Store } from "@/store/resumeBuilderV2Store";
-import type { HeadingData } from "@/types/resumeBuilder";
-import { ModernResumePage, sampleResumeData } from "@/components/templates/ModernResume";
+import type { HeadingFormData } from "@/types/resumeBuilder";
 
 interface HeadingStepProps {
   onNext: () => void;
 }
 
 const FIELDS: {
-  key: keyof HeadingData;
+  key: keyof HeadingFormData;
   label: string;
   placeholder: string;
   required?: boolean;
   type?: string;
   col: 1 | 2 | 3;
 }[] = [
-    { key: "firstName", label: "First Name", placeholder: "John", required: true, col: 1 },
-    { key: "lastName", label: "Last Name", placeholder: "Doe", required: true, col: 1 },
-    { key: "email", label: "Email", placeholder: "john@example.com", required: true, type: "email", col: 2 },
-    { key: "phone", label: "Phone", placeholder: "+91 98765 43210", required: true, col: 2 },
-    { key: "city", label: "City", placeholder: "Mumbai", col: 3 },
-    { key: "country", label: "Country", placeholder: "India", col: 3 },
-    { key: "pinCode", label: "Pin Code", placeholder: "400001", col: 3 },
-  ];
+  { key: "firstName", label: "First Name", placeholder: "John", required: true, col: 1 },
+  { key: "lastName",  label: "Last Name",  placeholder: "Doe",  required: true, col: 1 },
+  { key: "email", label: "Email", placeholder: "john@example.com", required: true, type: "email", col: 2 },
+  { key: "phone", label: "Phone", placeholder: "+91 98765 43210", required: true, col: 2 },
+  { key: "city",    label: "City",    placeholder: "Mumbai", col: 3 },
+  { key: "country", label: "Country", placeholder: "India",  col: 3 },
+];
+
+const OPTIONAL_LINKS: {
+  key: "linkedin" | "github" | "portfolio";
+  label: string;
+  placeholder: string;
+}[] = [
+  { key: "linkedin",  label: "LinkedIn",           placeholder: "https://linkedin.com/in/you" },
+  { key: "github",    label: "GitHub",              placeholder: "https://github.com/you"      },
+  { key: "portfolio", label: "Website / Portfolio", placeholder: "https://yoursite.com"        },
+];
 
 export default function HeadingStep({ onNext }: HeadingStepProps) {
   const { formData, updateHeading } = useResumeBuilderV2Store();
   const data = formData.heading;
 
   const handleChange =
-    (key: keyof HeadingData) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    (key: keyof HeadingFormData) => (e: React.ChangeEvent<HTMLInputElement>) =>
       updateHeading({ [key]: e.target.value });
 
-  const toggleOptional = (key: "linkedin" | "website") => {
+  const toggleOptional = (key: "linkedin" | "github" | "portfolio") => {
     updateHeading({ [key]: data[key] === undefined ? "" : undefined });
   };
 
@@ -41,7 +49,6 @@ export default function HeadingStep({ onNext }: HeadingStepProps) {
 
   return (
     <div className="min-h-screen bg-[#f8f8f6] flex">
-      {/* Main content */}
       <main className="flex-1 px-12 py-10 max-w-4xl">
         <button
           onClick={() => window.history.back()}
@@ -57,20 +64,18 @@ export default function HeadingStep({ onNext }: HeadingStepProps) {
           Required fields are marked <span className="text-rose-400">*</span>
         </p>
 
-        {/* Avatar + name row */}
-        <div className="flex gap-5 mb-8 items-start">
-          <div className="grid grid-cols-2 gap-4 flex-1">
-            {FIELDS.filter(f => f.col === 1).map(({ key, label, placeholder, required }) => (
-              <Field
-                key={key}
-                label={label}
-                required={required}
-                placeholder={placeholder}
-                value={(data[key] as string) ?? ""}
-                onChange={handleChange(key)}
-              />
-            ))}
-          </div>
+        {/* Name */}
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          {FIELDS.filter(f => f.col === 1).map(({ key, label, placeholder, required }) => (
+            <Field
+              key={key}
+              label={label}
+              required={required}
+              placeholder={placeholder}
+              value={(data[key] as string) ?? ""}
+              onChange={handleChange(key)}
+            />
+          ))}
         </div>
 
         {/* Contact */}
@@ -91,7 +96,7 @@ export default function HeadingStep({ onNext }: HeadingStepProps) {
 
         {/* Location */}
         <SectionDivider label="Location" />
-        <div className="grid grid-cols-3 gap-4 mb-10">
+        <div className="grid grid-cols-2 gap-4 mb-10">
           {FIELDS.filter(f => f.col === 3).map(({ key, label, placeholder }) => (
             <Field
               key={key}
@@ -105,47 +110,43 @@ export default function HeadingStep({ onNext }: HeadingStepProps) {
 
         {/* Online presence */}
         <div className="flex items-center gap-3 mb-5">
-          <span className="text-[10px] font-semibold tracking-widest uppercase text-gray-400">Online presence</span>
+          <span className="text-[10px] font-semibold tracking-widest uppercase text-gray-400">
+            Online presence
+          </span>
           <div className="flex-1 h-px bg-gray-200" />
           <span className="text-[10px] text-gray-400">optional</span>
         </div>
 
         <div className="flex gap-2 mb-5">
-          {(["linkedin", "website"] as const).map((key) => {
+          {OPTIONAL_LINKS.map(({ key, label }) => {
             const active = data[key] !== undefined;
             return (
               <button
                 key={key}
                 onClick={() => toggleOptional(key)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer ${active
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer ${
+                  active
                     ? "border-slate-800 bg-slate-800 text-white"
                     : "border-gray-200 text-gray-600 hover:border-gray-400 bg-white"
-                  }`}
+                }`}
               >
                 {active ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
-                {key === "linkedin" ? "LinkedIn" : "Website"}
+                {label}
               </button>
             );
           })}
         </div>
 
         <div className="space-y-4 mb-10">
-          {data.linkedin !== undefined && (
+          {OPTIONAL_LINKS.filter(({ key }) => data[key] !== undefined).map(({ key, label, placeholder }) => (
             <Field
-              label="LinkedIn URL"
-              placeholder="https://linkedin.com/in/you"
-              value={data.linkedin}
-              onChange={handleChange("linkedin")}
+              key={key}
+              label={label}
+              placeholder={placeholder}
+              value={(data[key] as string) ?? ""}
+              onChange={handleChange(key)}
             />
-          )}
-          {data.website !== undefined && (
-            <Field
-              label="Website / Portfolio"
-              placeholder="https://yoursite.com"
-              value={data.website}
-              onChange={handleChange("website")}
-            />
-          )}
+          ))}
         </div>
 
         {/* CTA */}
@@ -153,10 +154,11 @@ export default function HeadingStep({ onNext }: HeadingStepProps) {
           <button
             onClick={onNext}
             disabled={!isComplete}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${isComplete
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+              isComplete
                 ? "bg-slate-900 text-white hover:bg-slate-700"
                 : "bg-gray-100 text-gray-400 cursor-not-allowed"
-              }`}
+            }`}
           >
             Save & Continue
             <ChevronRight className="w-4 h-4" />
@@ -166,9 +168,6 @@ export default function HeadingStep({ onNext }: HeadingStepProps) {
           )}
         </div>
       </main>
-      <aside className="w-full max-w-[600px] shrink-0 overflow-y-auto p-4">
-        <ModernResumePage data={sampleResumeData} autoFit/>
-      </aside>
     </div>
   );
 }
@@ -183,12 +182,7 @@ function SectionDivider({ label }: { label: string }) {
 }
 
 function Field({
-  label,
-  placeholder,
-  value,
-  onChange,
-  required,
-  type = "text",
+  label, placeholder, value, onChange, required, type = "text",
 }: {
   label: string;
   placeholder?: string;

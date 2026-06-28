@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getJobs } from '@/services/jobService';
+import { list as getJobs } from '@/services/jobService';
 import type { Job } from '@/types';
 
 export default function CareersPage() {
@@ -10,21 +10,21 @@ export default function CareersPage() {
   const [loading, setLoading] = useState(true);
   const [selectedDepartment, setSelectedDepartment] = useState<string>('');
 
-  useEffect(() => {
-    fetchJobs();
-  }, []);
-
   const fetchJobs = async () => {
     try {
       setLoading(true);
       const response = await getJobs({ status: 'active', limit: 50 });
-      setJobs(response.data);
+      setJobs(response.jobs);
     } catch (error) {
       console.error('Failed to fetch jobs:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
 
   const departments = [...new Set(jobs.map(job => job.department))];
   const filteredJobs = selectedDepartment

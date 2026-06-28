@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useResumeBuilderV2Store } from "@/store/resumeBuilderV2Store";
-import { useResumeBuilderV2Mutation } from "@/hooks/useResumeBuilderV2Mutation";
 import HeadingStep from "@/components/resumeBuilder/steps/HeadingStep";
 import ExperienceStepWrapper from "@/components/resumeBuilder/wrappers/ExperienceStepWrapper";
 import EducationStepWrapper from "@/components/resumeBuilder/wrappers/EducationStepWrapper";
@@ -102,48 +101,6 @@ export default function BuildStepPage() {
     setPageError("Please complete the current step before jumping ahead.");
   };
 
-  // ── Generate ───────────────────────────────────────────────────────────────
-  const { mutate: generateResume, isPending: isGenerating } =
-    useResumeBuilderV2Mutation(() => {});
-
-  const handleGenerate = () => {
-    setGenerateError(null);
-
-    if (!isStepComplete(1)) {
-      setPageError("Please complete the Heading section (name, email, phone) before generating.");
-      goTo(1);
-      return;
-    }
-
-    // Generate a short-lived temp token so the report page can show progress
-    // while the real ID isn't available yet
-    const tempToken = btoa(
-      `processing:${Date.now()}:${Math.random().toString(36).slice(2)}`
-    ).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
-
-    // Navigate immediately — report page handles the loading state
-    router.push(`/resume-builder-v2/report/${tempToken}`);
-
-    generateResume(formData, {
-      onSuccess: (data) => {
-        if (!data?.id) {
-          // Shouldn't happen but guard anyway — go back with an error
-          router.push(`/resume-builder-v2/build/${sessionId}/finalize`);
-          setGenerateError("Resume was generated but no ID was returned. Please try again.");
-          return;
-        }
-        router.replace(`/resume-builder-v2/report/${data.id}`);
-      },
-      onError: (err) => {
-        const message =
-          err instanceof Error ? err.message : "Resume generation failed. Please try again.";
-        // Navigate back to finalize and surface the error there
-        router.push(`/resume-builder-v2/build/${sessionId}/finalize`);
-        setGenerateError(message);
-      },
-    });
-  };
-
   // ── Step content ───────────────────────────────────────────────────────────
   const renderStep = () => {
     switch (urlStep) {
@@ -168,8 +125,30 @@ export default function BuildStepPage() {
       case 3:
         return (
           <EducationStepWrapper
-            data={formData.education}
-            onChange={setEducation}
+            data={formData.education.map((e) => ({
+              id:              e.id,
+              degree:          e.degreeLevel || e.degree || '',
+              institution:     e.institution,
+              location:        e.location,
+              graduationMonth: '',
+              graduationYear:  e.endYear,
+              gpa:             '',
+            }))}
+            onChange={(items) =>
+              setEducation(
+                items.map((item) => ({
+                  id:          item.id,
+                  degree:      item.degree,
+                  degreeLevel: item.degree,
+                  program:     '',
+                  fieldOfStudy:'',
+                  institution: item.institution,
+                  location:    item.location,
+                  startYear:   '',
+                  endYear:     item.graduationYear,
+                })),
+              )
+            }
             onNext={() => goNext(3)}
             onBack={() => goBack(3)}
           />
@@ -199,8 +178,6 @@ export default function BuildStepPage() {
               </div>
             )}
             <FinalizeStep
-              onGenerate={handleGenerate}
-              isGenerating={isGenerating}
               onBack={() => goBack(6)}
             />
           </>

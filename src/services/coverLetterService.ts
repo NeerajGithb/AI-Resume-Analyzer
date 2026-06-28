@@ -1,69 +1,78 @@
-import axiosInstance, { ApiError } from '@/lib/api/baseService';
+import axiosInstance from '@/lib/api/baseService';
 import { ProgressHelper } from '@/lib/api/progressHelper';
-import { CoverLetterResult, CoverLetterStage } from '@/types';
+import type { CoverLetterResult, CoverLetterStage } from '@/types';
+import type { CoverLetterTone } from '@/store/coverLetterUIStore';
 
 export type OnStage = (stage: CoverLetterStage, progress: number) => void;
 
-/**
- * Generates cover letter with fake progress on frontend.
- */
+export type VariationAction =
+  | 'shorten'
+  | 'more_professional'
+  | 'more_confident'
+  | 'ats_optimized';
+
+export interface GenerateInput {
+  resume:              File;
+  jobTitle:            string;
+  companyName:         string;
+  jobDescription:      string;
+  hiringManagerName?:  string;
+  tone?:               CoverLetterTone;
+}
+
+const STAGES: CoverLetterStage[] = ['uploading', 'parsing', 'generating', 'finalizing'];
+const DURATIONS = [800, 1400, 2500, 600];
+
+const VARIATION_MAP: Record<VariationAction, string> = {
+  shorten:           'shorten',
+  more_professional: 'professional',
+  more_confident:    'confident',
+  ats_optimized:     'ats',
+};
+
 export async function generateCoverLetter(
-  resume: File,
-  jobDescription: string,
-  companyName: string,
-  tone: 'professional' | 'enthusiastic' | 'formal' | 'conversational',
+  input: GenerateInput,
   signal: AbortSignal,
   onStage: OnStage,
-): Promise<CoverLetterResult> {
-  
+): Promise<CoverLetterResult & { id: string }> {
   const progress = new ProgressHelper<CoverLetterStage>(onStage, signal);
 
-  return await progress.run(
-    ['uploading', 'parsing', 'generating'],
+  return progress.run(
+    STAGES,
     async () => {
-      const formData = new FormData();
-      formData.append('resume', resume);
-      formData.append('jobDescription', jobDescription);
-      formData.append('companyName', companyName);
-      formData.append('tone', tone);
+      const fd = new FormData();
+      fd.append('resume', input.resume);
+      fd.append('jobTitle', input.jobTitle);
+      fd.append('companyName', input.companyName);
+      fd.append('jobDescription', input.jobDescription);
+      if (input.hiringManagerName) fd.append('hiringManagerName', input.hiringManagerName);
+      if (input.tone)              fd.append('tone', input.tone);
 
-      try {
-        const response = await axiosInstance.post<{ success: boolean; data: CoverLetterResult }>(
-          '/cover-letter',
-          formData,
-          {
-            signal,
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
-
-        return response.data.data;
-      } catch (error) {
-        if (error instanceof ApiError) {
-          throw error;
-        }
-        if (error instanceof DOMException && error.name === 'AbortError') {
-          throw error;
-        }
-        throw new ApiError(500, 'Cover letter generation failed. Please try again.');
-      }
-    }
+      const res = await axiosInstance.post<CoverLetterResult & { id: string }>(
+        '/cover-letter',
+        fd,
+        { signal },
+      );
+      return res.data;
+    },
+    DURATIONS,
   );
 }
 
-/**
- * Fetches a previously generated cover letter by ID.
- */
-export async function getCoverLetterById(id: string): Promise<CoverLetterResult> {
-  try {
-    const response = await axiosInstance.get<{ success: boolean; data: CoverLetterResult }>(
-      `/cover-letter/${id}`
-    );
-    return response.data.data;
-  } catch (error) {
-    if (error instanceof ApiError) throw error;
-    throw new ApiError(500, 'Failed to load cover letter. Please try again.');
-  }
+export async function applyVariation(
+  letterId: string,
+  action: VariationAction,
+  signal?: AbortSignal,
+): Promise<{ cover_letter: string; word_count: number }> {
+  const res = await axiosInstance.post<{ cover_letter: string; word_count: number }>(
+    `/cover-letter/${letterId}/variation`,
+    { variation: VARIATION_MAP[action] },
+    { signal },
+  );
+  return res.data;
+}
+
+export async function getCoverLetterById(id: string): Promise<CoverLetterResult & { id: string }> {
+  const res = await axiosInstance.get<CoverLetterResult & { id: string }>(`/cover-letter/${id}`);
+  return res.data;
 }

@@ -13,6 +13,8 @@ import {
   WhatYouGetSection,
 } from '@/components/landing';
 import AppShell from '@/components/layout/AppShell';
+import { ModernResumePage, sampleResumeData } from '@/components/templates/ModernResume';
+import { LoadingLink } from '@/components/ui/LoadingLink';
 
 export default function ResumeBuilderV2Page() {
   const router = useRouter();
@@ -33,63 +35,69 @@ export default function ResumeBuilderV2Page() {
           transition={{ duration: 0.3 }}
         >
           {/* ── Hero + Image Split Layout ── */}
-          <section className="py-12 bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-            <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-
+          <section className="py-12 bg-linear-to-br from-blue-50 via-white to-indigo-50">
+            <div className="w-full px-4 md:px-6 lg:px-8">
+              <div className="flex flex-col lg:flex-row justify-between gap-8 lg:gap-12 md:px-20">
                 {/* Left: Hero Content */}
-                <div className="lg:pr-8">
-                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
-                    Build Your Professional Resume with{' '}
-                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                      AI-Powered Precision
+                <div className="flex-1 lg:pr-8 space-y-6">
+
+                  {/* Badge */}
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-xs font-medium text-blue-700">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                    AI-Powered Resume Builder
+                  </div>
+
+                  {/* Heading */}
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight">
+                    Build a Resume That{' '}
+                    <span className="relative inline-block">
+                      <span className="bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                        Actually Gets Hired
+                      </span>
+                      <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-linear-to-r from-blue-600 to-indigo-600 rounded-full" />
                     </span>
                   </h1>
 
-                  <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                    Create a beautiful, ATS-friendly resume in minutes. Our step-by-step builder guides you through every section with AI-powered content suggestions — completely free.
+                  {/* Subtext */}
+                  <p className="text-base md:text-lg text-gray-500 leading-relaxed max-w-lg">
+                    Step-by-step builder with AI suggestions for every section — ATS-friendly output, no design skills needed.
                   </p>
 
-                  <div className="flex flex-wrap items-center gap-4 mb-6 text-sm">
+                  {/* Stats row */}
+                  <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
                     {[
                       { value: '50K+', label: 'Resumes Built' },
-                      { value: 'AI-Powered', label: 'Smart Builder' },
-                      { value: '5min', label: 'Average Time' },
+                      { value: 'ATS-Ready', label: 'Every Export' },
+                      { value: '5 min', label: 'Average Build Time' },
                       { value: 'Free', label: 'No Hidden Costs' },
-                    ].map((stat, index) => (
-                      <div key={stat.label} className="flex items-center gap-1">
-                        <span className="font-bold text-blue-700">{stat.value}</span>
-                        <span className="text-gray-600">{stat.label}</span>
-                        {index < 3 && <span className="text-gray-300 ml-3">|</span>}
+                    ].map((stat) => (
+                      <div key={stat.label} className="flex items-baseline gap-1.5">
+                        <span className="font-bold text-gray-900">{stat.value}</span>
+                        <span className="text-gray-400">{stat.label}</span>
                       </div>
                     ))}
                   </div>
 
-                  {/* Main CTA Button */}
-                  <div className="mb-8">
-                    <Button
-                      onClick={handleCreateResume}
-                      size="lg"
-                      className="px-8 py-4 text-lg font-semibold"
+                  {/* CTA */}
+                  <div className="flex flex-col items-start gap-2">
+                    <LoadingLink
+                      href="/resume-builder-v2/experience-level"
+                      className="group relative inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white rounded-xl bg-linear-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                     >
-                      Create My Resume →
-                    </Button>
-                    <p className="text-xs text-gray-500 mt-2">No signup required • 100% free</p>
+                      <span>Create My Resume</span>
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white/20 group-hover:translate-x-0.5 transition-transform duration-200">
+                        →
+                      </span>
+                    </LoadingLink>
+                    <p className="text-xs text-gray-400 pl-1">No signup required · 100% free</p>
                   </div>
+
                 </div>
 
                 {/* Right: Resume Example Image - Reduced Size */}
-                <div className="lg:pl-4 flex items-center justify-center">
-                  <div className="max-w-md w-full rounded-lg overflow-hidden shadow-2xl border-2 border-gray-200">
-                    <Image
-                      src="/resume.jpg"
-                      alt="Professional Resume Example"
-                      width={500}
-                      height={700}
-                      priority
-                      className="w-full h-auto object-cover"
-                      quality={95}
-                    />
+                <div className="lg:pl-4">
+                  <div className="max-w-lg w-full rounded-lg overflow-hidden shadow-2xl border-2 border-gray-200">
+                    <ModernResumePage data={sampleResumeData} autoFit />
                   </div>
                 </div>
 

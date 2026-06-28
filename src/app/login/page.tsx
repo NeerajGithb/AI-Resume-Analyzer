@@ -123,7 +123,6 @@ export default function LoginPage() {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label htmlFor="password" className="block text-sm font-semibold text-gray-700">Password</label>
-                <button type="button" className="text-xs text-violet-600 hover:text-violet-800 font-medium transition-colors">Forgot password?</button>
               </div>
               <div className="relative">
                 <input

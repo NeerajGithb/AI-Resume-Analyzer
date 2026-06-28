@@ -1,11 +1,11 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useResumeBuilderV2Store } from '@/store/resumeBuilderV2Store';
 import { RoleCombobox } from '@/components/common/RoleCombobox';
-import { SummaryExamplesPanel } from './SummaryExamplesPanel';
-import { Lightbulb } from 'lucide-react';
+import { Sparkles, Loader2, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import axiosInstance from '@/lib/api/baseService';
 
 interface SummaryStepProps {
   onNext: () => void;
@@ -17,128 +17,237 @@ export default function SummaryStep({ onNext, onBack }: SummaryStepProps) {
   const summaryText = formData.summary.objective;
   const targetRole  = formData.summary.targetRole ?? '';
 
-  // Tracks which card is highlighted in the left panel
-  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
+  const [generating, setGenerating]   = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [panelOpen, setPanelOpen]     = useState(false);
+  const [error, setError]             = useState('');
 
-  // Called when user clicks a card — only then does textarea fill
-  const handleSelectExample = (text: string, id: number) => {
-    setSelectedCardId(id);
+  const generate = async (role: string) => {
+    if (!role.trim()) return;
+    setError('');
+    setGenerating(true);
+    setSuggestions([]);
+    setPanelOpen(true);
+
+    try {
+      const payload = {
+        targetRole: role,
+        count: 3,
+        skills: formData.skills.selected,
+        experience: formData.experience.map((e) => ({
+          jobTitle:   e.jobTitle,
+          employer:   e.employer,
+          startMonth: e.startMonth,
+          startYear:  e.startYear,
+          endMonth:   e.isCurrent ? '' : e.endMonth,
+          endYear:    e.isCurrent ? '' : e.endYear,
+          bullets:    e.bullets.filter(Boolean),
+        })),
+        education: formData.education.map((e) => ({
+          degree:      e.program || e.degreeLevel || e.degree,
+          institution: e.institution,
+          endYear:     e.endYear,
+        })),
+      };
+
+      const res = await axiosInstance.post<{
+        success: boolean;
+        data: { summaries: string[] };
+      }>('/builder-v2/summary', payload);
+
+      const summaries = res.data?.data?.summaries ?? [];
+      if (summaries.length) {
+        setSuggestions(summaries);
+      } else {
+        setError('No summaries returned. Try again.');
+      }
+    } catch {
+      setError('Failed to generate summaries. Please try again.');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleRoleChange = (role: string) => {
+    updateSummary({ targetRole: role });
+    setError('');
+    if (role.trim()) generate(role);
+    else { setSuggestions([]); setPanelOpen(false); }
+  };
+
+  // Fills textarea but keeps panel open so user can pick another
+  const handleSelect = (text: string) => {
     updateSummary({ objective: text });
   };
 
   const handleNext = () => {
-    if (!summaryText.trim()) {
-      alert('Please select or write a professional summary before continuing.');
-      return;
-    }
-    if (!targetRole.trim()) {
-      alert('Please enter your target job title before continuing.');
-      return;
-    }
+    if (!targetRole.trim()) { alert('Please enter your target job title.'); return; }
+    if (!summaryText.trim()) { alert('Please select or write a professional summary.'); return; }
     onNext();
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="min-h-screen bg-white px-10 py-8"
+      transition={{ duration: 0.2 }}
+      className="min-h-screen bg-[#f8f8f6] px-10 py-8"
     >
-      {/* Back */}
       <button
         onClick={onBack}
-        className="flex items-center gap-1 text-[#1a1f8f] hover:underline text-sm font-medium mb-6"
+        className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-800 transition-colors mb-8"
       >
-        ← Go Back
+        <ArrowLeft className="w-3.5 h-3.5" /> Go back
       </button>
 
-      {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">
-            Briefly tell us about your background
-          </h1>
-          <p className="text-gray-500 text-sm">
-            Set your target job title, then pick or customise a summary.
-          </p>
-        </div>
-        <button className="flex items-center gap-1 text-[#1a1f8f] text-sm">
-          <Lightbulb className="w-4 h-4" /> Tips
-        </button>
-      </div>
-
-      {/* Target role */}
-      <div className="mb-8 max-w-md">
-        <label className="block text-xs font-semibold text-gray-700 mb-1.5 uppercase tracking-wide">
-          Target Job Title <span className="text-red-500">*</span>
-        </label>
-        <RoleCombobox
-          id="target-role"
-          value={targetRole}
-          onChange={(val) => updateSummary({ targetRole: val })}
-          placeholder="e.g. Full Stack Developer, Data Analyst"
-          required
-        />
-        <p className="text-xs text-gray-400 mt-1">
-          This is the role your final resume will be tailored for.
+      <div className="mb-8">
+        <h1 className="text-[22px] font-semibold text-gray-900 tracking-tight mb-1">
+          Professional Summary
+        </h1>
+        <p className="text-sm text-gray-400">
+          Select your target role — AI will suggest 3 summaries to choose from.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-        {/* Left — AI-powered examples panel */}
-        <SummaryExamplesPanel
-          selectedId={selectedCardId}
-          onSelect={handleSelectExample}
-        />
-
-        {/* Right — textarea (only fills when user clicks a card) */}
-        <div className="space-y-3">
-          <div className="border border-gray-200 rounded-xl overflow-hidden">
-            <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-              <span className="text-xs font-medium text-gray-500">Your professional summary</span>
-              {summaryText && (
-                <button
-                  onClick={() => { updateSummary({ objective: '' }); setSelectedCardId(null); }}
-                  className="text-xs text-gray-400 hover:text-red-500 transition-colors"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-            <textarea
-              value={summaryText}
-              onChange={(e) => {
-                updateSummary({ objective: e.target.value });
-                // De-select card highlight once user manually edits
-                if (selectedCardId !== null) setSelectedCardId(null);
-              }}
-              className="w-full p-4 min-h-[280px] resize-none focus:outline-none text-sm text-gray-800 leading-relaxed"
-              placeholder="Click a summary on the left to fill this in, or write your own…"
+      {/* Target Role + Regenerate */}
+      <div className="mb-6">
+        <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
+          Target Job Title <span className="text-red-400">*</span>
+        </label>
+        <div className="flex items-center gap-3 max-w-xl">
+          <div className="flex-1">
+            <RoleCombobox
+              id="target-role"
+              value={targetRole}
+              onChange={handleRoleChange}
+              placeholder="e.g. Full Stack Developer, Product Manager"
+              required
             />
           </div>
-
-          <p className="text-xs text-gray-400">
-            {summaryText.length > 0
-              ? `${summaryText.length} characters`
-              : 'Select a summary from the left or write your own'}
-          </p>
-
-          <div className="flex items-center justify-between pt-2">
+          {targetRole.trim() && (
             <button
-              onClick={onBack}
-              className="px-6 py-3 rounded-full border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition text-sm"
+              onClick={() => generate(targetRole)}
+              disabled={generating}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
             >
-              ← Back
+              {generating
+                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Generating…</>
+                : <><Sparkles className="w-3.5 h-3.5" /> Regenerate</>}
             </button>
-            <button
-              onClick={handleNext}
-              className="px-8 py-3 rounded-full bg-yellow-400 text-gray-900 font-semibold hover:bg-yellow-300 transition text-sm"
-            >
-              Next: Finalize →
-            </button>
-          </div>
+          )}
         </div>
+      </div>
+
+      {/* Suggestions panel — collapsible, never destroyed */}
+      {(suggestions.length > 0 || generating) && (
+        <div className="mb-6 bg-white border border-indigo-100 rounded-xl overflow-hidden shadow-sm">
+          {/* Panel header — click to collapse/expand */}
+          <button
+            type="button"
+            onClick={() => setPanelOpen((o) => !o)}
+            className="w-full flex items-center justify-between px-5 py-3 bg-indigo-50 hover:bg-indigo-100/60 transition-colors"
+          >
+            <span className="text-xs font-semibold text-indigo-600 uppercase tracking-widest flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5" />
+              AI Suggestions — click one to use it
+            </span>
+            {panelOpen
+              ? <ChevronUp className="w-4 h-4 text-indigo-400" />
+              : <ChevronDown className="w-4 h-4 text-indigo-400" />}
+          </button>
+
+          <AnimatePresence initial={false}>
+            {panelOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                {generating ? (
+                  <div className="px-5 py-8 flex items-center gap-2 text-sm text-indigo-500">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Generating summaries based on your profile…
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100">
+                    {suggestions.map((text, i) => {
+                      const isSelected = summaryText === text;
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => handleSelect(text)}
+                          className={`w-full text-left px-5 py-4 transition-colors group flex items-start gap-3 ${
+                            isSelected ? 'bg-indigo-50' : 'hover:bg-indigo-50'
+                          }`}
+                        >
+                          <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
+                            isSelected
+                              ? 'bg-indigo-600 text-white'
+                              : 'bg-indigo-100 text-indigo-500 group-hover:bg-indigo-200'
+                          }`}>
+                            {isSelected ? <Check className="w-3 h-3" /> : i + 1}
+                          </span>
+                          <p className="text-sm text-gray-700 leading-relaxed flex-1">{text}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+
+      {error && <p className="text-xs text-amber-500 mb-4">{error}</p>}
+
+      {/* Full-width textarea */}
+      <div className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm mb-2">
+        <div className="px-5 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+          <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest">
+            Your Professional Summary
+          </span>
+          {summaryText && (
+            <button
+              onClick={() => updateSummary({ objective: '' })}
+              className="text-xs text-gray-300 hover:text-red-500 transition-colors"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+        <textarea
+          value={summaryText}
+          onChange={(e) => updateSummary({ objective: e.target.value })}
+          rows={7}
+          className="w-full px-5 py-4 text-sm leading-relaxed text-gray-800 resize-none focus:outline-none bg-white placeholder:text-gray-300"
+          placeholder={
+            targetRole
+              ? 'Click a suggestion above, or write your own summary here…'
+              : 'Select a target role above to generate AI suggestions…'
+          }
+        />
+      </div>
+
+      <p className="text-xs text-gray-400 mb-10 text-right">{summaryText.length} characters</p>
+
+      {/* Navigation */}
+      <div className="flex items-center justify-between border-t border-gray-100 pt-4">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 px-6 py-2.5 rounded-full border border-gray-200 bg-white text-gray-500 text-sm font-medium hover:border-gray-300 hover:text-gray-700 transition-all"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" /> Back
+        </button>
+        <button
+          onClick={handleNext}
+          className="flex items-center gap-2 px-7 py-2.5 rounded-full bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700 transition-all"
+        >
+          Next: Finalize <ArrowRight className="w-3.5 h-3.5 opacity-60" />
+        </button>
       </div>
     </motion.div>
   );

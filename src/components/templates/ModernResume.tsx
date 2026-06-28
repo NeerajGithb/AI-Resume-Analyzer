@@ -93,6 +93,13 @@ export interface ResumeData {
   experience: ExperienceItem[];
   projects: ProjectItem[];
   achievements: string[];
+  // Optional sections
+  languages?: { language: string; proficiency: string }[];
+  certifications?: { name: string; issuer?: string; date?: string }[];
+  awards?: { title: string; issuer?: string; date?: string; description?: string }[];
+  interests?: string[];
+  volunteerExp?: { role: string; organisation: string; date?: string; description?: string }[];
+  websites?: { label?: string; url: string }[];
 }
 
 export interface ModernResumeProps {
@@ -117,6 +124,59 @@ export interface ModernResumeProps {
   unboundedHeight?: boolean;
 }
 
+/* --------------------------------- ContactIcon ------------------------------ */
+
+function ContactIcon({ icon, size }: { icon: string; size: string }) {
+  const s = size;
+  const style = { width: s, height: s, display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 } as React.CSSProperties;
+
+  switch (icon) {
+    case 'phone':
+      return (
+        <svg style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 .82h3a2 2 0 012 1.72c.13 1 .37 1.97.72 2.9a2 2 0 01-.45 2.11L6.09 8.67a16 16 0 006.24 6.24l1.12-1.18a2 2 0 012.11-.45c.93.35 1.9.59 2.9.72a2 2 0 011.72 2z"/>
+        </svg>
+      );
+    case 'email':
+      return (
+        <svg style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="4" width="20" height="16" rx="2"/>
+          <path d="M2 7l10 7 10-7"/>
+        </svg>
+      );
+    case 'linkedin':
+      return (
+        <svg style={style} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/>
+          <rect x="2" y="9" width="4" height="12"/>
+          <circle cx="4" cy="4" r="2"/>
+        </svg>
+      );
+    case 'github':
+      return (
+        <svg style={style} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844a9.59 9.59 0 012.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+        </svg>
+      );
+    case 'portfolio':
+      return (
+        <svg style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+        </svg>
+      );
+    case 'location':
+      return (
+        <svg style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
 /* --------------------------------- Component -------------------------------- */
 
 const ModernResume: React.FC<ModernResumeProps> = ({
@@ -136,6 +196,12 @@ const ModernResume: React.FC<ModernResumeProps> = ({
     experience = [],
     projects = [],
     achievements = [],
+    languages = [],
+    certifications = [],
+    awards = [],
+    interests = [],
+    volunteerExp = [],
+    websites = [],
   } = data;
 
   // CSS custom properties scale every font-size / spacing value below via
@@ -178,7 +244,7 @@ const ModernResume: React.FC<ModernResumeProps> = ({
           {title && (
             <div
               style={{ fontSize: px(15), marginBottom: px(8) }}
-              className="font-semibold text-blue-800"
+              className="font-semibold text-neutral-900"
             >
               {title}
             </div>
@@ -194,15 +260,19 @@ const ModernResume: React.FC<ModernResumeProps> = ({
                   {idx > 0 && <span className="text-neutral-400">|</span>}
                   {item.href ? (
                     <a
-                      className="text-blue-800 no-underline hover:underline"
+                      className="no-underline hover:underline flex items-center gap-1 text-blue-600"
                       href={item.href}
                     >
-                      {item.icon && <span className="mr-1">{item.icon}</span>}
+                      {item.icon && (
+                        <span className="text-neutral-900">
+                          <ContactIcon icon={item.icon} size={px(12)} />
+                        </span>
+                      )}
                       {item.label}
                     </a>
                   ) : (
-                    <span>
-                      {item.icon && <span className="mr-1">{item.icon}</span>}
+                    <span className="flex items-center gap-1 text-neutral-900">
+                      {item.icon && <ContactIcon icon={item.icon} size={px(12)} />}
                       {item.label}
                     </span>
                   )}
@@ -223,7 +293,7 @@ const ModernResume: React.FC<ModernResumeProps> = ({
             </h2>
             <p
               style={{ fontSize: px(13), lineHeight: 1.5 }}
-              className="m-0 text-blue-800"
+              className="m-0 text-neutral-900"
             >
               {summary}
             </p>
@@ -406,6 +476,103 @@ const ModernResume: React.FC<ModernResumeProps> = ({
                 </li>
               ))}
             </ul>
+          </section>
+        )}
+
+        {/* Certifications */}
+        {certifications.length > 0 && (
+          <section style={{ marginTop: px(14) }}>
+            <h2
+              style={{ fontSize: px(15), marginBottom: px(8), paddingBottom: px(4) }}
+              className="m-0 border-b-[1.5px] border-neutral-900 font-bold tracking-wide"
+            >
+              Certifications
+            </h2>
+            {certifications.map((c, idx) => (
+              <div style={{ marginBottom: px(4) }} key={idx}>
+                <div style={{ fontSize: px(13.5) }} className="flex flex-wrap items-baseline justify-between">
+                  <span className="font-bold">{c.name}</span>
+                  {c.date && <span className="whitespace-nowrap font-semibold">{c.date}</span>}
+                </div>
+                {c.issuer && <div style={{ fontSize: px(13), marginTop: px(1) }}>{c.issuer}</div>}
+              </div>
+            ))}
+          </section>
+        )}
+
+        {/* Languages */}
+        {languages.length > 0 && (
+          <section style={{ marginTop: px(14) }}>
+            <h2
+              style={{ fontSize: px(15), marginBottom: px(8), paddingBottom: px(4) }}
+              className="m-0 border-b-[1.5px] border-neutral-900 font-bold tracking-wide"
+            >
+              Languages
+            </h2>
+            <div style={{ fontSize: px(13), lineHeight: 1.65 }}>
+              {languages.map((l, idx) => (
+                <div style={{ marginBottom: px(1) }} key={idx}>
+                  <span className="font-bold">{l.language}:</span>{' '}
+                  <span>{l.proficiency}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Awards */}
+        {awards.length > 0 && (
+          <section style={{ marginTop: px(14) }}>
+            <h2
+              style={{ fontSize: px(15), marginBottom: px(8), paddingBottom: px(4) }}
+              className="m-0 border-b-[1.5px] border-neutral-900 font-bold tracking-wide"
+            >
+              Awards
+            </h2>
+            {awards.map((a, idx) => (
+              <div style={{ marginBottom: px(4) }} key={idx}>
+                <div style={{ fontSize: px(13.5) }} className="flex flex-wrap items-baseline justify-between">
+                  <span className="font-bold">{a.title}</span>
+                  {a.date && <span className="whitespace-nowrap font-semibold">{a.date}</span>}
+                </div>
+                {a.issuer && <div style={{ fontSize: px(13), marginTop: px(1) }}>{a.issuer}</div>}
+                {a.description && <div style={{ fontSize: px(12.5), marginTop: px(2) }} className="italic text-neutral-700">{a.description}</div>}
+              </div>
+            ))}
+          </section>
+        )}
+
+        {/* Volunteer Experience */}
+        {volunteerExp.length > 0 && (
+          <section style={{ marginTop: px(14) }}>
+            <h2
+              style={{ fontSize: px(15), marginBottom: px(8), paddingBottom: px(4) }}
+              className="m-0 border-b-[1.5px] border-neutral-900 font-bold tracking-wide"
+            >
+              Volunteer Experience
+            </h2>
+            {volunteerExp.map((v, idx) => (
+              <div style={{ marginBottom: px(4) }} key={idx}>
+                <div style={{ fontSize: px(13.5) }} className="flex flex-wrap items-baseline justify-between">
+                  <span className="font-bold">{v.role}{v.organisation ? ` — ${v.organisation}` : ''}</span>
+                  {v.date && <span className="whitespace-nowrap font-semibold">{v.date}</span>}
+                </div>
+                {v.description && <div style={{ fontSize: px(13), marginTop: px(2) }}>{v.description}</div>}
+              </div>
+            ))}
+          </section>
+        )}
+
+        {/* Interests */}
+        {interests.length > 0 && (
+          <section style={{ marginTop: px(14) }}>
+            <h2
+              style={{ fontSize: px(15), marginBottom: px(8), paddingBottom: px(4) }}
+              className="m-0 border-b-[1.5px] border-neutral-900 font-bold tracking-wide"
+            >
+              Interests
+            </h2>
+            <div style={{ fontSize: px(13) }}>{interests.join(' · ')}</div>
           </section>
         )}
 
@@ -624,15 +791,11 @@ export const sampleResumeData: ResumeData = {
   title: "Full-Stack Developer",
   pageNumber: 1,
   contact: [
-    { icon: "📞", label: "+91 8287168307", href: "tel:+918287168307" },
-    {
-      icon: "✉️",
-      label: "neerajvishwakarma726689@gmail.com",
-      href: "mailto:neerajvishwakarma726689@gmail.com",
-    },
-    { icon: "💼", label: "LinkedIn", href: "https://linkedin.com/in/your-profile" },
-    { icon: "🐙", label: "GitHub", href: "https://github.com/your-profile" },
-    { icon: "⚡", label: "LeetCode", href: "https://leetcode.com/your-profile" },
+    { icon: "phone",     label: "+91 8287168307", href: "tel:+918287168307" },
+    { icon: "email",     label: "neerajvishwakarma726689@gmail.com", href: "mailto:neerajvishwakarma726689@gmail.com" },
+    { icon: "linkedin",  label: "LinkedIn",  href: "https://linkedin.com/in/your-profile" },
+    { icon: "github",    label: "GitHub",    href: "https://github.com/your-profile" },
+    { icon: "portfolio", label: "LeetCode",  href: "https://leetcode.com/your-profile" },
   ],
   summary:
     "Full-Stack Developer with hands-on experience building web applications using Next.js, Node.js, and MongoDB. Built and deployed projects featuring REST APIs, JWT authentication, Redis caching, and AI-powered features. Enjoy solving real problems and developing scalable web applications.",

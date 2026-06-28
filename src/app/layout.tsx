@@ -2,14 +2,16 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { inter, jetbrainsMono } from '@/lib/fonts';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+import { ErrorBoundaryProvider } from '@/components/providers/ErrorBoundaryProvider';
 import { TopLoader } from '@/components/ui/TopLoader';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import './globals.css';
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { headers } from 'next/headers';
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://resupulse.app'),
@@ -67,9 +69,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+
+  const pathname = (await headers()).get('x-pathname') ?? '';
+  const isPrint = pathname.includes('/print');
   return (
     <html lang="en" className={cn("h-full", inter.variable, jetbrainsMono.variable, "font-sans", geist.variable)}>
       <head>
@@ -90,12 +95,6 @@ export default function RootLayout({
                 priceCurrency: 'USD',
                 description: 'Free ATS resume analysis',
               },
-              aggregateRating: {
-                '@type': 'AggregateRating',
-                ratingValue: '4.9',
-                reviewCount: '1240',
-                bestRating: '5',
-              },
             }),
           }}
         />
@@ -104,11 +103,13 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <TopLoader />
         </Suspense>
-        <Header />
-        <QueryProvider>
-          <main className='flex-1 mt-16'>{children}</main>
-        </QueryProvider>
-        <Footer />
+        {!isPrint && <Header />}
+        <ErrorBoundaryProvider>
+          <QueryProvider>
+            <main className={cn('flex-1', !isPrint && 'mt-16')}>{children}</main>
+          </QueryProvider>
+        </ErrorBoundaryProvider>
+        {!isPrint && <Footer />}
       </body>
     </html>
   );

@@ -10,6 +10,7 @@ import { useLatestJobMatchQuery, useJobMatchResultQuery, useJobMatchMutation } f
 import { useQueryClient } from '@tanstack/react-query';
 import { JobMatchDashboard } from '@/components/jobMatch/JobMatchDashboard';
 import AppShell from '@/components/layout/AppShell';
+import { queryKeys } from '@/lib/api/queryKeys';
 
 function AlertIcon() {
   return (
@@ -64,28 +65,16 @@ export default function JobMatchResultPage() {
   // Show progress when: stage is active, temp token without result, or loading
   const showProgress = stage || (isTempToken && !result) || isLoading;
 
-  console.log('[JobMatchReport] Debug:', {
-    id,
-    isTempToken,
-    stage,
-    progress,
-    hasResult: !!result,
-    isLoading,
-    showProgress,
-    cacheResult: !!cacheResult,
-    apiResult: !!apiResult,
-  });
 
   useEffect(() => {
     if (isTempToken && result?.id && !stage) {
-      console.log('[JobMatchReport] Replacing temp token with real ID:', result.id);
       router.replace(`/job-match/report/${result.id}`);
     }
   }, [isTempToken, result?.id, stage, router]);
 
   const handleReset = () => {
     reset();
-    queryClient.setQueryData(['latest-job-match'], undefined);
+    if (id) queryClient.removeQueries({ queryKey: queryKeys.jobMatch.result(id) });
     router.push('/job-match');
   };
 

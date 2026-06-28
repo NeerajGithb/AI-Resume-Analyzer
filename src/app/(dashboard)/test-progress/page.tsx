@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { GlobalProgress } from '@/components/common/GlobalProgress';
 import { useAnalysisStore } from '@/store/analysisUIStore';
 import { Button } from '@/components/ui/Button';
+import type { AnalysisStage } from '@/types';
 
 const STAGES = [
   'uploading',
@@ -72,7 +73,7 @@ export default function TestProgressPage() {
   };
 
   // Manual stage testing
-  const testStage = (stage: string, progress: number) => {
+  const testStage = (stage: AnalysisStage, progress: number) => {
     setStageProgress(stage, progress);
   };
 

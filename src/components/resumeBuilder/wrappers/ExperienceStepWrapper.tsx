@@ -29,6 +29,7 @@ const emptyEntry = (): ExperienceItem => ({
   id: genId(),
   jobTitle: "",
   employer: "",
+  employmentType: "",
   location: "",
   isRemote: false,
   startMonth: "",
@@ -37,6 +38,7 @@ const emptyEntry = (): ExperienceItem => ({
   endYear: "",
   isCurrent: false,
   description: "",
+  bullets: [],
 });
 
 // ─── View states ──────────────────────────────────────────────────────────────

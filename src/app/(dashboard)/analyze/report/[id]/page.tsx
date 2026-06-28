@@ -41,8 +41,9 @@ export default function AnalysisReportPage() {
   const { abort } = useAnalyzeMutation();
 
   const { data: cache } = useLatestAnalysisQuery();
-  const cacheResult = cache?.result ?? null;
-  const cacheError = cache?.error ?? null;
+  // cache IS the AnalysisResponse — it has no result/error wrapper
+  const cacheResult = cache ?? null;
+  const cacheError: Error | null = null;
 
   const { data: apiResult, isPending: isLoadingApi, error: apiError } = useAnalysisResultQuery(
     isTempToken ? undefined : id
